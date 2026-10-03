@@ -138,7 +138,7 @@ The interface uses an immersive dark surface, oversized typography, a minimal ed
 
 ## Author
 
-**Sagar M Kalagudi** — AI & ML Developer
+**Sagar Kalagudi** — AI & ML Developer
 
 - **GitHub:** [github.com/SagarMk07](https://github.com/SagarMk07)
 - **LinkedIn:** [linkedin.com/in/sagar-kalagudi-b375163a2](https://www.linkedin.com/in/sagar-kalagudi-b375163a2/)

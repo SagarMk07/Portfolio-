@@ -25,22 +25,21 @@ export function ProjectRow({ project, reverse = false }: { project: Project; rev
         <motion.span variants={revealItemVariants}>{project.number} / PROJECT</motion.span>
         <motion.span variants={revealItemVariants}>{project.category}</motion.span>
       </motion.div>
-      <MotionLink className="project-title-link" to={`/projects/${project.slug}`} data-cursor="view" variants={revealItemVariants}>
+      <MotionLink className="project-title-link" to={`/projects/${project.slug}`} variants={revealItemVariants}>
         <motion.h3 variants={revealItemVariants}>{project.title}</motion.h3><ArrowUpRight className="project-arrow" size={22}/>
       </MotionLink>
       <motion.p variants={revealItemVariants}>{project.shortDescription}</motion.p>
       <motion.div className="project-tags" variants={revealItemVariants}>{project.technologies.map(tech => <span key={tech}>{tech}</span>)}</motion.div>
       <motion.div className="project-ctas" variants={revealItemVariants}>
-        <Link className="text-link" to={`/projects/${project.slug}`} data-cursor="explore">EXPLORE CASE STUDY <span>↗</span></Link>
-        {project.github && <a className="project-secondary-link" href={project.github} target="_blank" rel="noreferrer" data-cursor="code">GITHUB <ArrowUpRight size={13}/></a>}
-        {project.liveDemo && <a className="project-secondary-link" href={project.liveDemo} target="_blank" rel="noreferrer" data-cursor="open">LIVE DEMO <ArrowUpRight size={13}/></a>}
+        <Link className="text-link" to={`/projects/${project.slug}`}>EXPLORE CASE STUDY <span>↗</span></Link>
+        {project.github && <a className="project-secondary-link" href={project.github} target="_blank" rel="noreferrer">GITHUB <ArrowUpRight size={13}/></a>}
+        {project.liveDemo && <a className="project-secondary-link" href={project.liveDemo} target="_blank" rel="noreferrer">LIVE DEMO <ArrowUpRight size={13}/></a>}
       </motion.div>
     </motion.div>
     <MotionLink
       className="project-art-link"
       to={`/projects/${project.slug}`}
       aria-label={`Explore ${project.title} case study`}
-      data-cursor="view"
       variants={imageVariants}
     >
       <ProjectArtwork project={project}/><span className="art-link-icon"><ArrowUpRight size={18}/></span>
