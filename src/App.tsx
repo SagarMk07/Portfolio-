@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { ArrowDown, ArrowUpRight, MoveUpRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Route, Routes, useLocation } from 'react-router-dom'
@@ -36,53 +36,8 @@ const heroCopyVariants = {
 
 function Hero() {
   const reduceMotion = useReducedMotion()
-  const heroRef = useRef<HTMLElement>(null)
 
-  useEffect(() => {
-    if (reduceMotion || window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(max-width: 1023px)').matches) return
-    const element = heroRef.current
-    if (!element) return
-    let frame = 0
-    let targetX = 0
-    let targetY = 0
-    let currentX = 0
-    let currentY = 0
-
-    const animate = () => {
-      frame = 0
-      currentX += (targetX - currentX) * 0.18
-      currentY += (targetY - currentY) * 0.18
-      element.style.setProperty('--px', `${currentX}px`)
-      element.style.setProperty('--py', `${currentY}px`)
-      if (Math.abs(targetX - currentX) > 0.08 || Math.abs(targetY - currentY) > 0.08) frame = window.requestAnimationFrame(animate)
-      else {
-        currentX = targetX
-        currentY = targetY
-        element.style.setProperty('--px', `${currentX}px`)
-        element.style.setProperty('--py', `${currentY}px`)
-      }
-    }
-    const move = (event: PointerEvent) => {
-      if (event.pointerType === 'touch') return
-      targetX = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * 14
-      targetY = (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * 14
-      if (!frame) frame = window.requestAnimationFrame(animate)
-    }
-    const reset = () => {
-      targetX = 0
-      targetY = 0
-      if (!frame) frame = window.requestAnimationFrame(animate)
-    }
-    element.addEventListener('pointermove', move, { passive: true })
-    element.addEventListener('pointerleave', reset, { passive: true })
-    return () => {
-      element.removeEventListener('pointermove', move)
-      element.removeEventListener('pointerleave', reset)
-      if (frame) window.cancelAnimationFrame(frame)
-    }
-  }, [reduceMotion])
-
-  return <section className="hero" ref={heroRef}>
+  return <section className="hero">
     <div className="hero-surface" aria-hidden="true">
       <div className="hero-grid"/><div className="hero-orbit hero-orbit-one"/><div className="hero-orbit hero-orbit-two"/>
       <div className="hero-crosshair crosshair-a">+</div><div className="hero-crosshair crosshair-b">+</div><div className="hero-signal"/>

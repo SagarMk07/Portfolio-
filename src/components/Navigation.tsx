@@ -9,13 +9,18 @@ export function Navigation() {
   const [scrolled, setScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState('')
   const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const scrolledRef = useRef(false)
   const location = useLocation()
   useEffect(() => {
     let frame = 0
     const update = () => {
       if (frame) return
       frame = window.requestAnimationFrame(() => {
-        setScrolled(window.scrollY > 20)
+        const nextScrolled = window.scrollY > 20
+        if (scrolledRef.current !== nextScrolled) {
+          scrolledRef.current = nextScrolled
+          setScrolled(nextScrolled)
+        }
         frame = 0
       })
     }
