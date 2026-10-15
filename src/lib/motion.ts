@@ -1,10 +1,11 @@
 export const motionEase = [0.22, 1, 0.36, 1] as const
+export const cinematicEase = [0.16, 1, 0.3, 1] as const
 
 export const motionDuration = {
   fast: 0.18,
   normal: 0.38,
   emphasis: 0.72,
-  project: 0.68,
+  project: 0.82,
 } as const
 
 export const fadeUpVariants = {
@@ -35,4 +36,36 @@ export const lineItemVariants = {
 export const imageRevealVariants = {
   hidden: { opacity: 0, scale: 1.045 },
   visible: { opacity: 1, scale: 1, transition: { duration: motionDuration.project, ease: motionEase } },
+}
+
+/* Scroll Depth Variants for Projects */
+export const projectDepthVariants = {
+  hidden: { opacity: 0, scale: 1.08, y: 40 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      duration: motionDuration.project,
+      ease: cinematicEase,
+    },
+  },
+}
+
+/* Masked Clip Reveal Variants for Hero Typography */
+export const heroNameRevealVariants = {
+  hidden: {
+    clipPath: 'inset(100% 0 0 0)',
+    y: '100%',
+    opacity: 0.7,
+  },
+  visible: {
+    clipPath: 'inset(0% 0 0 0)',
+    y: '0%',
+    opacity: 1,
+    transition: {
+      duration: 0.85,
+      ease: cinematicEase,
+    },
+  },
 }
