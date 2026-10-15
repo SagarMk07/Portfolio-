@@ -6,20 +6,20 @@ import { Text } from '@react-three/drei'
 export interface TechNodeData {
   id: string
   name: string
-  category: 'ai' | 'lang' | 'frontend' | 'backend' | 'cloud'
+  category: 'ai' | 'lang' | 'frontend' | 'backend' | 'data' | 'tools'
   position: [number, number, number]
   connections: string[]
   info: string
 }
 
 export const techNodes: TechNodeData[] = [
-  // AI / ML Cluster (Varying Z depths for true spatial composition)
+  // 1. AI / ML Constellation Cluster
   {
     id: 'ai-core',
     name: 'AI / ML',
     category: 'ai',
     position: [-2.2, 1.8, 0.8],
-    connections: ['python', 'ml', 'vision', 'genai'],
+    connections: ['python', 'ml', 'vision', 'genai', 'ai-apis'],
     info: 'Multimodal AI systems, computer vision, and neural reasoning pipelines.',
   },
   {
@@ -27,7 +27,7 @@ export const techNodes: TechNodeData[] = [
     name: 'Python',
     category: 'lang',
     position: [-3.6, 0.6, 1.4],
-    connections: ['ai-core', 'ml', 'backend-core'],
+    connections: ['ai-core', 'ml', 'data-analysis', 'backend-core'],
     info: 'Primary language for deep learning, scientific computing, and system scripts.',
   },
   {
@@ -35,7 +35,7 @@ export const techNodes: TechNodeData[] = [
     name: 'Machine Learning',
     category: 'ai',
     position: [-1.6, 0.2, -0.6],
-    connections: ['ai-core', 'python', 'genai'],
+    connections: ['ai-core', 'python', 'genai', 'data-analysis'],
     info: 'Supervised, unsupervised, and recommendation models for real-world telemetry.',
   },
   {
@@ -51,35 +51,51 @@ export const techNodes: TechNodeData[] = [
     name: 'Generative AI',
     category: 'ai',
     position: [-0.6, 2.2, 0.9],
-    connections: ['ai-core', 'vision', 'ml', 'frontend-core'],
+    connections: ['ai-core', 'vision', 'ml', 'frontend-core', 'ai-apis'],
     info: 'Gemini, Vertex AI, and prompt/vector-assisted workflows.',
   },
+  {
+    id: 'ai-apis',
+    name: 'AI APIs',
+    category: 'ai',
+    position: [-1.8, 3.1, 0.2],
+    connections: ['ai-core', 'genai', 'rest-apis'],
+    info: 'Structured LLM model endpoints, schema parsing, and multimodal routing.',
+  },
 
-  // Languages Cluster
+  // 2. Core Languages Cluster
   {
     id: 'cpp',
     name: 'C++',
     category: 'lang',
     position: [-4.4, -0.8, -1.2],
-    connections: ['python'],
+    connections: ['python', 'systems'],
     info: 'Algorithms, memory efficiency, and computational performance.',
+  },
+  {
+    id: 'systems',
+    name: 'Systems / DSA',
+    category: 'lang',
+    position: [-3.8, -2.1, -0.6],
+    connections: ['cpp'],
+    info: 'Algorithmic efficiency, time-space optimization, and memory architectures.',
   },
   {
     id: 'typescript',
     name: 'TypeScript',
     category: 'lang',
     position: [0.4, 0.9, 1.1],
-    connections: ['frontend-core', 'backend-core'],
+    connections: ['frontend-core', 'backend-core', 'react', 'vite'],
     info: 'Strict type safety across full-stack applications and extensions.',
   },
 
-  // Frontend Cluster
+  // 3. Full Stack & Frontend Cluster
   {
     id: 'frontend-core',
-    name: 'FRONTEND',
+    name: 'FULL STACK',
     category: 'frontend',
     position: [2.0, 1.7, 0.4],
-    connections: ['typescript', 'react', 'tailwind', 'genai'],
+    connections: ['typescript', 'react', 'tailwind', 'genai', 'vite'],
     info: 'Modern reactive interfaces and high-performance interactive architectures.',
   },
   {
@@ -87,25 +103,33 @@ export const techNodes: TechNodeData[] = [
     name: 'React',
     category: 'frontend',
     position: [3.6, 1.9, 0.9],
-    connections: ['frontend-core', 'typescript'],
+    connections: ['frontend-core', 'typescript', 'vite', 'tailwind'],
     info: 'Component-driven reactive web applications and component systems.',
+  },
+  {
+    id: 'vite',
+    name: 'Vite',
+    category: 'frontend',
+    position: [1.8, 2.8, 0.8],
+    connections: ['react', 'typescript', 'frontend-core'],
+    info: 'Fast ESM bundler, rollup optimization, and lightning-fast developer workflow.',
   },
   {
     id: 'tailwind',
     name: 'Tailwind CSS',
     category: 'frontend',
-    position: [2.8, 2.9, -0.5],
-    connections: ['frontend-core'],
+    position: [3.2, 3.0, -0.5],
+    connections: ['frontend-core', 'react'],
     info: 'Design system tokens and responsive utility layouts.',
   },
 
-  // Backend Cluster
+  // 4. Backend & API Cluster
   {
     id: 'backend-core',
     name: 'BACKEND',
     category: 'backend',
     position: [0.8, -1.1, 0.5],
-    connections: ['typescript', 'python', 'node', 'cloud-core'],
+    connections: ['typescript', 'python', 'node', 'cloud-core', 'rest-apis'],
     info: 'Scalable service endpoints, asynchronous processors, and APIs.',
   },
   {
@@ -113,23 +137,39 @@ export const techNodes: TechNodeData[] = [
     name: 'Node.js',
     category: 'backend',
     position: [2.0, -0.3, 1.3],
-    connections: ['backend-core', 'typescript'],
+    connections: ['backend-core', 'typescript', 'rest-apis'],
     info: 'Asynchronous event-driven server runtime and API integrations.',
   },
+  {
+    id: 'rest-apis',
+    name: 'REST APIs',
+    category: 'backend',
+    position: [0.2, -2.2, 0.9],
+    connections: ['backend-core', 'node', 'ai-apis'],
+    info: 'Deterministic REST communication contracts, rate-limiting, and webhooks.',
+  },
 
-  // Data & Cloud Cluster
+  // 5. Data & Cloud Cluster
   {
     id: 'cloud-core',
     name: 'DATA & CLOUD',
-    category: 'cloud',
+    category: 'data',
     position: [3.0, -1.7, -0.6],
-    connections: ['backend-core', 'supabase', 'firebase'],
+    connections: ['backend-core', 'supabase', 'firebase', 'data-analysis'],
     info: 'Cloud datastores, document databases, and persistence layers.',
+  },
+  {
+    id: 'data-analysis',
+    name: 'Data Analysis',
+    category: 'data',
+    position: [-1.4, -1.0, -1.4],
+    connections: ['python', 'ml', 'cloud-core'],
+    info: 'Statistical inspection, data hygiene, and anomaly detection.',
   },
   {
     id: 'supabase',
     name: 'Supabase',
-    category: 'cloud',
+    category: 'data',
     position: [4.2, -1.0, 0.7],
     connections: ['cloud-core', 'backend-core'],
     info: 'Postgres persistence, Row Level Security, and real-time data sync.',
@@ -137,10 +177,20 @@ export const techNodes: TechNodeData[] = [
   {
     id: 'firebase',
     name: 'Firebase',
-    category: 'cloud',
+    category: 'data',
     position: [3.4, -2.6, 0.3],
     connections: ['cloud-core'],
     info: 'NoSQL Firestore datastores, authentication, and serverless hosting.',
+  },
+
+  // 6. Tools & Dev Workspace Cluster
+  {
+    id: 'git',
+    name: 'Git & GitHub',
+    category: 'tools',
+    position: [-2.9, -1.8, 1.2],
+    connections: ['backend-core', 'python', 'typescript'],
+    info: 'Distributed version control, branch isolation, and collaborative review.',
   },
 ]
 
@@ -238,7 +288,8 @@ export function NeuralNetwork({ visible, onHoverNode, mouseRef }: NeuralNetworkP
           (nodeMap.get(hoveredId)?.connections.includes(node.id) ||
             node.connections.includes(hoveredId))
 
-        const nodeRadius = node.category.includes('core') ? 0.22 : 0.15
+        const isCoreNode = node.category.includes('core') || node.id === 'ai-core'
+        const nodeRadius = isCoreNode ? 0.22 : 0.15
         const activeColor = isHovered ? '#ffffff' : isConnected ? '#c7ff3d' : '#8f9286'
         const emissiveColor = isHovered || isConnected ? '#c7ff3d' : '#000000'
         const emissiveIntensity = isHovered ? 2.8 : isConnected ? 1.5 : 0

@@ -2511,13 +2511,655 @@ html.has-custom-cursor * {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .hero-grid,
-  .hero-orbit,
-  .hero-signal,
-  .computational-canvas,
-  .core-ring-outer,
-  .core-ring-inner {
-    transform: none !important;
-    transition: none !important;
+}
+
+/* ==================================================
+   17. SYSTEM STATUS TELEMETRY HUD
+   ================================================== */
+.system-status-hud {
+  position: fixed;
+  bottom: 24px;
+  left: var(--gutter);
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(10, 12, 9, 0.82);
+  border: 1px solid rgba(199, 255, 61, 0.18);
+  backdrop-filter: blur(8px);
+  padding: 8px 14px;
+  font: 8px var(--mono);
+  letter-spacing: 0.09em;
+  color: #92958a;
+  pointer-events: auto;
+  transition: background-color 250ms var(--cinematic-ease),
+              border-color 250ms var(--cinematic-ease),
+              color 250ms var(--cinematic-ease);
+}
+
+.system-status-hud.is-lime-theme {
+  background: rgba(199, 255, 61, 0.95);
+  border-color: rgba(8, 9, 8, 0.25);
+  color: #080908;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--acid);
+  box-shadow: 0 0 6px var(--acid);
+}
+
+.system-status-hud.is-lime-theme .status-dot {
+  background: #080908;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+}
+
+.status-title {
+  color: #72756a;
+}
+
+.system-status-hud.is-lime-theme .status-title {
+  color: #3b441f;
+}
+
+.status-state {
+  color: var(--acid);
+  font-weight: 500;
+}
+
+.system-status-hud.is-lime-theme .status-state {
+  color: #080908;
+}
+
+.status-divider {
+  width: 1px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.system-status-hud.is-lime-theme .status-divider {
+  background: rgba(8, 9, 8, 0.2);
+}
+
+.status-mode {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-label {
+  color: #65685d;
+}
+
+.system-status-hud.is-lime-theme .status-label {
+  color: #4a5526;
+}
+
+.status-value {
+  color: #f1f1ed;
+  font-weight: 500;
+}
+
+.system-status-hud.is-lime-theme .status-value {
+  color: #080908;
+}
+
+.status-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-meta > div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+@media (max-width: 900px) {
+  .status-meta {
+    display: none;
   }
 }
+
+@media (max-width: 600px) {
+  .system-status-hud {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    justify-content: space-between;
+    font-size: 7.5px;
+  }
+}
+
+/* ==================================================
+   18. CURRENTLY BUILDING SECTION
+   ================================================== */
+.currently-building-wrapper {
+  margin-top: 80px;
+  padding-top: 40px;
+  border-top: 1px solid var(--line);
+}
+
+.currently-building-card {
+  border: 1px solid rgba(199, 255, 61, 0.22);
+  background: rgba(13, 16, 12, 0.65);
+  backdrop-filter: blur(6px);
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: border-color var(--motion-normal) var(--cinematic-ease);
+}
+
+.currently-building-card:hover {
+  border-color: rgba(199, 255, 61, 0.45);
+}
+
+.building-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.building-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font: 8px var(--mono);
+  color: var(--acid);
+  letter-spacing: 0.12em;
+}
+
+.building-pulse-icon {
+  color: var(--acid);
+}
+
+.building-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 7.5px var(--mono);
+  letter-spacing: 0.1em;
+  color: #080908;
+  background: var(--acid);
+  padding: 3px 8px;
+  font-weight: 600;
+  border-radius: 2px;
+}
+
+.building-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #080908;
+}
+
+.building-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.building-title {
+  font-size: clamp(26px, 3.2vw, 42px);
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  color: #f1f1ed;
+  margin: 0;
+}
+
+.building-class {
+  font: 8px var(--mono);
+  letter-spacing: 0.12em;
+  color: #8c8f85;
+}
+
+.building-description {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #9a9d93;
+  max-width: 680px;
+  margin: 0;
+}
+
+.building-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.building-stack-tags {
+  display: flex;
+  gap: 12px;
+  font: 7.5px var(--mono);
+  color: #808378;
+  letter-spacing: 0.08em;
+  flex-wrap: wrap;
+}
+
+.building-stack-tags span {
+  padding: 3px 7px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.building-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 7.5px var(--mono);
+  color: var(--acid);
+  letter-spacing: 0.1em;
+}
+
+/* ==================================================
+   19. RESUME BUTTON & MODAL
+   ================================================== */
+.resume-link-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: #a6a8a1;
+  font: 9px var(--mono);
+  letter-spacing: 0.11em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--motion-fast);
+}
+
+.resume-link-btn:hover {
+  color: var(--acid);
+}
+
+.resume-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 4vw, 48px);
+}
+
+.resume-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 9, 8, 0.85);
+  backdrop-filter: blur(12px);
+}
+
+.resume-modal-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 860px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: #0d0f0c;
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+}
+
+.resume-controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  background: #121510;
+  border-bottom: 1px solid var(--line);
+}
+
+.resume-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resume-pill {
+  font: 7.5px var(--mono);
+  color: #080908;
+  background: var(--acid);
+  padding: 2px 7px;
+  font-weight: 600;
+  border-radius: 2px;
+  letter-spacing: 0.08em;
+}
+
+.resume-filename {
+  font: 8px var(--mono);
+  color: #83867c;
+  letter-spacing: 0.09em;
+}
+
+.resume-controls-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.resume-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(199, 255, 61, 0.08);
+  border: 1px solid var(--acid);
+  color: var(--acid);
+  font: 8px var(--mono);
+  letter-spacing: 0.08em;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+
+.resume-action-btn:hover {
+  background: var(--acid);
+  color: #080908;
+}
+
+.resume-close-btn {
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: #9ea197;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  transition: border-color var(--motion-fast), color var(--motion-fast);
+}
+
+.resume-close-btn:hover {
+  border-color: var(--acid);
+  color: var(--acid);
+}
+
+.resume-document {
+  padding: clamp(24px, 4vw, 44px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.resume-doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.resume-name {
+  font-size: clamp(28px, 4vw, 42px);
+  letter-spacing: -0.06em;
+  font-weight: 500;
+  color: #ffffff;
+  margin: 0;
+}
+
+.resume-subtitle {
+  font: 8.5px var(--mono);
+  color: var(--acid);
+  letter-spacing: 0.12em;
+  margin: 6px 0 0;
+}
+
+.resume-contact-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font: 8px var(--mono);
+  color: #8b8f84;
+  letter-spacing: 0.08em;
+}
+
+.resume-contact-block a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #c5c7be;
+  transition: color var(--motion-fast);
+}
+
+.resume-contact-block a:hover {
+  color: var(--acid);
+}
+
+.resume-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resume-section-heading {
+  font: 8px var(--mono);
+  letter-spacing: 0.12em;
+  color: var(--acid);
+  margin: 0;
+}
+
+.resume-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #9da096;
+  margin: 0;
+}
+
+.resume-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resume-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.resume-date,
+.resume-tag {
+  font: 7.5px var(--mono);
+  color: var(--acid);
+  letter-spacing: 0.09em;
+}
+
+.resume-subtext {
+  font: 8px var(--mono);
+  color: #72756a;
+}
+
+.resume-projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+}
+
+.resume-project-item {
+  border: 1px solid var(--line);
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.015);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resume-tech-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.resume-tech-list span {
+  font: 7px var(--mono);
+  color: #8c8f85;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 2px 6px;
+}
+
+.resume-skills-block {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+}
+
+.skills-group-title {
+  font: 7.5px var(--mono);
+  color: var(--acid);
+  letter-spacing: 0.1em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.resume-skills-block p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #9fa198;
+  margin: 0;
+}
+
+.resume-doc-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font: 7.5px var(--mono);
+  color: #717469;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.resume-verify-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--acid);
+}
+
+/* Print Styles for Resume */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .resume-modal-container,
+  .resume-modal-container * {
+    visibility: visible;
+  }
+  .resume-modal-overlay {
+    position: static;
+    padding: 0;
+    background: #ffffff;
+  }
+  .resume-modal-container {
+    max-width: 100%;
+    max-height: 100%;
+    background: #ffffff;
+    color: #000000;
+    border: none;
+    box-shadow: none;
+  }
+  .resume-controls-bar {
+    display: none;
+  }
+  .resume-name,
+  .resume-item-top strong {
+    color: #000000;
+  }
+  .resume-text,
+  .resume-skills-block p {
+    color: #333333;
+  }
+}
+
+/* ==================================================
+   20. WEBGL INITIALIZATION & FALLBACK
+   ================================================== */
+.webgl-init-banner {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  background: rgba(10, 12, 9, 0.9);
+  border: 1px solid var(--acid);
+  padding: 4px 12px;
+  font: 7.5px var(--mono);
+  color: var(--acid);
+  letter-spacing: 0.12em;
+  pointer-events: none;
+  border-radius: 2px;
+  animation: fadeOut 350ms forwards 500ms;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.three-fallback-surface {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--bg);
+  pointer-events: none;
+}
+
+.fallback-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.25;
+  background-image: linear-gradient(rgba(199, 255, 61, 0.08) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(199, 255, 61, 0.08) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Contact Availability Banner */
+.contact-availability-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 8px var(--mono);
+  letter-spacing: 0.12em;
+  color: #080908;
+  background: rgba(8, 9, 8, 0.12);
+  border: 1px solid rgba(8, 9, 8, 0.25);
+  padding: 6px 12px;
+  border-radius: 2px;
+  margin: 18px 0;
+}
+
+.avail-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #080908;
+}
+

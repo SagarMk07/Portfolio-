@@ -10,10 +10,13 @@ import type { TechNodeData } from './components/three/NeuralNetwork'
 import { InteractiveStack } from './components/InteractiveStack'
 import { SectionHeading } from './components/SectionHeading'
 import { ProjectRow } from './components/ProjectRow'
+import { CurrentlyBuilding } from './components/CurrentlyBuilding'
 import { GitHubActivity } from './components/GitHubActivity'
 import { ProjectDetail } from './components/ProjectDetail'
 import { LineReveal } from './components/LineReveal'
 import { ScrollReveal } from './components/ScrollReveal'
+import { SystemStatus } from './components/SystemStatus'
+import { ResumeModal } from './components/ResumeModal'
 import {
   cinematicEase,
   motionDuration,
@@ -57,7 +60,7 @@ const heroBottomVariants = {
   visible: { transition: { delayChildren: 0.44, staggerChildren: 0.12 } },
 }
 
-function Hero() {
+function Hero({ onOpenResume }: { onOpenResume: () => void }) {
   const reduceMotion = useReducedMotion()
 
   return (
@@ -145,9 +148,14 @@ function Hero() {
           <a href={linkedin} target="_blank" rel="noreferrer">
             LINKEDIN <ArrowUpRight size={14} />
           </a>
-          <span className="resume-placeholder" title="Resume has not been provided">
-            RESUME / NOT PROVIDED
-          </span>
+          <button
+            type="button"
+            className="resume-link-btn"
+            onClick={onOpenResume}
+            title="View verified Curriculum Vitae"
+          >
+            RESUME / CV <ArrowUpRight size={13} />
+          </button>
         </div>
 
         <a className="scroll-cue" href="#work">
@@ -169,7 +177,7 @@ function Work({ onActiveProject }: { onActiveProject: (index: number) => void })
   return (
     <section className="work-section page-section" id="work" data-cursor-theme="dark">
       <SectionHeading
-        index="01"
+        index="02"
         eyebrow="SELECTED CASE FILES"
         title="IDEAS, MADE|TANGIBLE."
       >
@@ -191,6 +199,9 @@ function Work({ onActiveProject }: { onActiveProject: (index: number) => void })
             />
           ))}
       </div>
+
+      {/* Subsection: Currently Building */}
+      <CurrentlyBuilding />
     </section>
   )
 }
@@ -198,7 +209,7 @@ function Work({ onActiveProject }: { onActiveProject: (index: number) => void })
 function About() {
   return (
     <section className="about-section page-section" id="about" data-cursor-theme="dark">
-      <SectionHeading index="02" eyebrow="CORE PHILOSOPHY" title="BUILDING WITH|INTENT." />
+      <SectionHeading index="03" eyebrow="CORE PHILOSOPHY" title="BUILDING WITH|INTENT." />
       <div className="about-content">
         <LineReveal
           as="h3"
@@ -236,10 +247,49 @@ function About() {
   )
 }
 
+function BuildLog() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start 70%', 'end 70%'],
+  })
+  const scaleY = useSpring(scrollYProgress, { stiffness: 100, damping: 25, restDelta: 0.001 })
+
+  return (
+    <section className="journey-section page-section" id="build-log" data-cursor-theme="dark">
+      <SectionHeading
+        index="04"
+        eyebrow="BUILD LOG / EVOLUTION"
+        title="BUILT BY FOLLOWING|THE QUESTION."
+      />
+      <div ref={containerRef} className="journey-list-wrapper">
+        <div className="journey-timeline-track" aria-hidden="true">
+          <motion.div className="journey-timeline-fill" style={{ scaleY }} />
+        </div>
+        <ScrollReveal className="journey-list" stagger amount={0.15}>
+          {projects.map(project => (
+            <motion.div className="journey-row" key={project.id} variants={revealItemVariants}>
+              <span className="journey-index">{project.number}</span>
+              <div className="journey-main">
+                <span className="journey-meta">{project.category}</span>
+                <h3>{project.title}</h3>
+                <p>{project.shortDescription}</p>
+              </div>
+              <span className="journey-marker">
+                <i />
+              </span>
+            </motion.div>
+          ))}
+        </ScrollReveal>
+      </div>
+    </section>
+  )
+}
+
 function Stack({ hoveredNode }: { hoveredNode: TechNodeData | null }) {
   return (
     <section className="stack-section page-section" id="stack" data-cursor-theme="dark">
-      <SectionHeading index="03" eyebrow="TOOLS &amp; MATERIALS" title="THE WORKING|MATRIX.">
+      <SectionHeading index="05" eyebrow="TOOLS &amp; MATERIALS" title="THE WORKING|MATRIX.">
         <p className="stack-intro">
           An interactive 3D computational network of technologies, shaped by project requirements.
           Explore the 3D constellation directly or select domains below.
@@ -268,45 +318,6 @@ function Stack({ hoveredNode }: { hoveredNode: TechNodeData | null }) {
   )
 }
 
-function BuildLog() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start 70%', 'end 70%'],
-  })
-  const scaleY = useSpring(scrollYProgress, { stiffness: 100, damping: 25, restDelta: 0.001 })
-
-  return (
-    <section className="journey-section page-section" id="build-log" data-cursor-theme="dark">
-      <SectionHeading
-        index="05"
-        eyebrow="BUILD LOG / SEQUENCE"
-        title="BUILT BY FOLLOWING|THE QUESTION."
-      />
-      <div ref={containerRef} className="journey-list-wrapper">
-        <div className="journey-timeline-track" aria-hidden="true">
-          <motion.div className="journey-timeline-fill" style={{ scaleY }} />
-        </div>
-        <ScrollReveal className="journey-list" stagger amount={0.15}>
-          {projects.map(project => (
-            <motion.div className="journey-row" key={project.id} variants={revealItemVariants}>
-              <span className="journey-index">{project.number}</span>
-              <div className="journey-main">
-                <span className="journey-meta">{project.category}</span>
-                <h3>{project.title}</h3>
-                <p>{project.shortDescription}</p>
-              </div>
-              <span className="journey-marker">
-                <i />
-              </span>
-            </motion.div>
-          ))}
-        </ScrollReveal>
-      </div>
-    </section>
-  )
-}
-
 function Contact() {
   return (
     <div className="contact-wrapper">
@@ -314,7 +325,7 @@ function Contact() {
       <div className="contact-gradient-lead" aria-hidden="true" />
       <section className="contact-section page-section" id="contact" data-cursor-theme="lime">
         <ScrollReveal className="contact-top">
-          <span>06 / CONTACT</span>
+          <span>07 / CONTACT</span>
           <span>GOOD WORK STARTS WITH A CONVERSATION</span>
         </ScrollReveal>
 
@@ -330,6 +341,10 @@ function Contact() {
             Open to thoughtful projects, engineering collaborations, and conversations about AI,
             software systems, and modern products.
           </motion.p>
+          <div className="contact-availability-banner">
+            <span className="avail-dot" />
+            <span>AVAILABLE FOR INTERNSHIPS &amp; COLLABORATIONS</span>
+          </div>
           <motion.a
             href={linkedin}
             className="contact-cta"
@@ -378,19 +393,21 @@ function Footer() {
 function HomePage({
   hoveredNode,
   onActiveProject,
+  onOpenResume,
 }: {
   hoveredNode: TechNodeData | null
   onActiveProject: (index: number) => void
+  onOpenResume: () => void
 }) {
   return (
     <>
       <main id="top">
-        <Hero />
+        <Hero onOpenResume={onOpenResume} />
         <Work onActiveProject={onActiveProject} />
         <About />
+        <BuildLog />
         <Stack hoveredNode={hoveredNode} />
         <GitHubActivity />
-        <BuildLog />
         <Contact />
       </main>
       <Footer />
@@ -403,6 +420,8 @@ export default function App() {
   const reduceMotion = useReducedMotion()
   const [hovered3DNode, setHovered3DNode] = useState<TechNodeData | null>(null)
   const [activeProjectIndex, setActiveProjectIndex] = useState<number>(-1)
+  const [activeSection, setActiveSection] = useState<string>('hero')
+  const [isResumeOpen, setIsResumeOpen] = useState<boolean>(false)
 
   useEffect(() => {
     let frame = 0
@@ -427,6 +446,7 @@ export default function App() {
       <PortfolioScene
         activeProjectIndex={activeProjectIndex}
         onHoverTechNode={setHovered3DNode}
+        onActiveSectionChange={setActiveSection}
       />
 
       {/* Global Navigation Header with Scroll Progress Bar */}
@@ -434,6 +454,12 @@ export default function App() {
 
       {/* Precision Micro-Dot Cursor with Lime-to-Black Theme Inversion */}
       <CustomCursor />
+
+      {/* Ambient System Status Telemetry HUD */}
+      <SystemStatus activeSection={activeSection} />
+
+      {/* Clean Verified Resume/CV Modal */}
+      <ResumeModal isOpen={isResumeOpen} onClose={() => setIsResumeOpen(false)} />
 
       {/* Main Application Routes */}
       <Routes>
@@ -443,6 +469,7 @@ export default function App() {
             <HomePage
               hoveredNode={hovered3DNode}
               onActiveProject={setActiveProjectIndex}
+              onOpenResume={() => setIsResumeOpen(true)}
             />
           }
         />
@@ -453,6 +480,7 @@ export default function App() {
             <HomePage
               hoveredNode={hovered3DNode}
               onActiveProject={setActiveProjectIndex}
+              onOpenResume={() => setIsResumeOpen(true)}
             />
           }
         />

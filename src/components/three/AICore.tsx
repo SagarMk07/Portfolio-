@@ -1,6 +1,7 @@
 import { useRef, useMemo } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
+import { OrbitalSystem } from './OrbitalSystem'
 
 interface AICoreProps {
   position?: [number, number, number]
@@ -22,16 +23,12 @@ export function AICore({
   const exoEdgesRef = useRef<THREE.LineSegments>(null)
   const crystalCoreRef = useRef<THREE.Mesh>(null)
   const nucleusRef = useRef<THREE.Mesh>(null)
-  const ring1Ref = useRef<THREE.Group>(null)
-  const ring2Ref = useRef<THREE.Group>(null)
-  const ring3Ref = useRef<THREE.Group>(null)
-  const satellitesGroupRef = useRef<THREE.Group>(null)
   const pointLightRef = useRef<THREE.PointLight>(null)
 
   // Memoized industrial materials
   const materials = useMemo(() => {
     return {
-      // Dark gunmetal exoskeleton with subtle specular gloss
+      // Dark gunmetal exoskeleton with specular facets
       exoskeleton: new THREE.MeshStandardMaterial({
         color: '#121410',
         metalness: 0.94,
@@ -58,30 +55,12 @@ export function AICore({
         roughness: 0.1,
         metalness: 0.4,
       }),
-      // Calibrated gimbal rings
-      gimbal: new THREE.MeshStandardMaterial({
-        color: '#282b24',
-        metalness: 0.92,
-        roughness: 0.22,
-      }),
-      gimbalAccent: new THREE.MeshStandardMaterial({
-        color: '#c7ff3d',
-        emissive: '#c7ff3d',
-        emissiveIntensity: 1.2,
-        metalness: 0.5,
-        roughness: 0.2,
-      }),
-      satellite: new THREE.MeshStandardMaterial({
+      cornerNode: new THREE.MeshStandardMaterial({
         color: '#f1f1ed',
         emissive: '#c7ff3d',
         emissiveIntensity: 0.6,
         roughness: 0.25,
         metalness: 0.8,
-      }),
-      vectorLine: new THREE.LineBasicMaterial({
-        color: '#c7ff3d',
-        transparent: true,
-        opacity: 0.25,
       }),
     }
   }, [])
@@ -91,8 +70,6 @@ export function AICore({
     // 1. Exoskeleton faceted polyhedron
     const exoGeo = new THREE.IcosahedronGeometry(1.5, 0)
     const exoEdges = new THREE.EdgesGeometry(exoGeo)
-
-    // Corner nodes on each exoskeleton vertex
     const cornerNode = new THREE.SphereGeometry(0.065, 12, 12)
 
     // 2. Inner crystalline processor
@@ -101,23 +78,12 @@ export function AICore({
     // 3. Quantum pulsing nucleus
     const nucleusGeo = new THREE.OctahedronGeometry(0.48, 0)
 
-    // 4. Aerospace gimbal rings
-    const ring1 = new THREE.TorusGeometry(2.2, 0.024, 16, 90)
-    const ring2 = new THREE.TorusGeometry(2.65, 0.02, 16, 90)
-    const ring3 = new THREE.TorusGeometry(3.15, 0.016, 16, 90)
-
-    const satelliteGeo = new THREE.SphereGeometry(0.075, 12, 12)
-
     return {
       exoGeo,
       exoEdges,
       cornerNode,
       crystalGeo,
       nucleusGeo,
-      ring1,
-      ring2,
-      ring3,
-      satelliteGeo,
     }
   }, [])
 
@@ -139,18 +105,6 @@ export function AICore({
     }
     return points
   }, [geometries.exoGeo])
-
-  // Satellite node coordinates on outer orbital ring
-  const satellitePositions = useMemo(() => {
-    const count = 8
-    const points: [number, number, number][] = []
-    const r = 3.15
-    for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 2
-      points.push([Math.cos(angle) * r, Math.sin(angle) * r, 0])
-    }
-    return points
-  }, [])
 
   useFrame((state, delta) => {
     const time = state.clock.getElapsedTime()
@@ -175,16 +129,16 @@ export function AICore({
         0.06
       )
 
-      // Mouse-driven subtle angular tilt
+      // Mouse-driven subtle angular tilt (restrained, 5-15px equivalent)
       const targetRotX = mouse.y * 0.18
       const targetRotY = mouse.x * 0.25
       rootGroupRef.current.rotation.x = THREE.MathUtils.lerp(rootGroupRef.current.rotation.x, targetRotX, 0.05)
       rootGroupRef.current.rotation.y = THREE.MathUtils.lerp(rootGroupRef.current.rotation.y, targetRotY, 0.05)
 
-      // Section & Contact scale transitions
+      // Section scale transitions
       let targetScale = scale
       if (activeSection === 'contact') {
-        targetScale = 0.0001 // Collapse into quantum singularity on lime contact
+        targetScale = 0.0001 // Dissolve into quantum singularity
       } else if (activeSection === 'stack') {
         targetScale = scale * 0.45 // Step back for 3D Neural Network
       }
@@ -194,28 +148,12 @@ export function AICore({
       )
     }
 
-    // Project-reactive dynamics
-    let ring1Speed = 0.35
-    let ring2Speed = 0.4
+    // Dynamic pulse frequency per project
     let pulseFrequency = 2.4
-
-    if (activeProjectIndex === 0) {
-      // MedAssist: Accelerated pulse and heightened primary ring
-      ring1Speed = 0.95
-      pulseFrequency = 4.2
-    } else if (activeProjectIndex === 1) {
-      // SmartShopper: Ring 2 pitch velocity
-      ring2Speed = 1.1
-      pulseFrequency = 3.0
-    } else if (activeProjectIndex === 2) {
-      // Trip Planner: Broad orbital rotation
-      pulseFrequency = 2.0
-    } else if (activeProjectIndex === 3) {
-      // Rainwater: Deep rhythmic oscillation
-      ring1Speed = 0.2
-      ring2Speed = 0.25
-      pulseFrequency = 1.6
-    }
+    if (activeProjectIndex === 0) pulseFrequency = 4.2
+    else if (activeProjectIndex === 1) pulseFrequency = 3.0
+    else if (activeProjectIndex === 2) pulseFrequency = 2.0
+    else if (activeProjectIndex === 3) pulseFrequency = 1.6
 
     // 1. Exoskeleton multi-axis rotation
     if (exoRef.current) {
@@ -243,23 +181,6 @@ export function AICore({
     if (pointLightRef.current) {
       pointLightRef.current.intensity = 2.0 + Math.sin(time * pulseFrequency) * 1.0
     }
-
-    // 4. Interlocking Gimbal Rings
-    if (ring1Ref.current) {
-      ring1Ref.current.rotation.x += delta * ring1Speed
-      ring1Ref.current.rotation.y += delta * (ring1Speed * 0.4)
-    }
-    if (ring2Ref.current) {
-      ring2Ref.current.rotation.y -= delta * ring2Speed
-      ring2Ref.current.rotation.z += delta * (ring2Speed * 0.6)
-    }
-    if (ring3Ref.current) {
-      ring3Ref.current.rotation.z += delta * 0.22
-      ring3Ref.current.rotation.x -= delta * 0.16
-    }
-    if (satellitesGroupRef.current) {
-      satellitesGroupRef.current.rotation.z += delta * 0.3
-    }
   })
 
   return (
@@ -267,7 +188,7 @@ export function AICore({
       {/* 1. Structural Exoskeleton Monolith */}
       <mesh ref={exoRef} geometry={geometries.exoGeo} material={materials.exoskeleton} castShadow receiveShadow>
         {cornerPositions.map((pos, idx) => (
-          <mesh key={idx} position={pos} geometry={geometries.cornerNode} material={materials.satellite} />
+          <mesh key={idx} position={pos} geometry={geometries.cornerNode} material={materials.cornerNode} />
         ))}
       </mesh>
 
@@ -281,34 +202,8 @@ export function AICore({
       <mesh ref={nucleusRef} geometry={geometries.nucleusGeo} material={materials.nucleus} />
       <pointLight ref={pointLightRef} color="#c7ff3d" intensity={2.5} distance={9} decay={2} />
 
-      {/* 4. Gimbal Ring 1 (Inner Yaw/Pitch) */}
-      <group ref={ring1Ref}>
-        <mesh geometry={geometries.ring1} material={materials.gimbal} />
-        <mesh position={[2.2, 0, 0]} geometry={geometries.cornerNode} material={materials.gimbalAccent} />
-        <mesh position={[-2.2, 0, 0]} geometry={geometries.cornerNode} material={materials.gimbalAccent} />
-      </group>
-
-      {/* 5. Gimbal Ring 2 (Middle Angled Roll) */}
-      <group ref={ring2Ref} rotation={[Math.PI / 4, 0, Math.PI / 6]}>
-        <mesh geometry={geometries.ring2} material={materials.gimbal} />
-        <mesh position={[0, 2.65, 0]} geometry={geometries.cornerNode} material={materials.gimbalAccent} />
-        <mesh position={[0, -2.65, 0]} geometry={geometries.cornerNode} material={materials.gimbalAccent} />
-      </group>
-
-      {/* 6. Gimbal Ring 3 (Outer with 8 Orbiting Satellites) */}
-      <group ref={ring3Ref} rotation={[-Math.PI / 5, Math.PI / 4, 0]}>
-        <mesh geometry={geometries.ring3} material={materials.gimbal} />
-        <group ref={satellitesGroupRef}>
-          {satellitePositions.map((pos, idx) => (
-            <mesh
-              key={idx}
-              position={pos}
-              geometry={geometries.satelliteGeo}
-              material={idx % 2 === 0 ? materials.gimbalAccent : materials.satellite}
-            />
-          ))}
-        </group>
-      </group>
+      {/* 4. Modular Orbital Aerospace Gimbal System */}
+      <OrbitalSystem activeProjectIndex={activeProjectIndex} activeSection={activeSection} />
     </group>
   )
 }

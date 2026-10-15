@@ -37,9 +37,9 @@ export function SceneController({
     let coreZ = 0
     let coreScale = isMobile ? 0.82 : 1.25
 
-    // Multi-stage cinematic camera journey linked to scroll and section
-    if (activeSection === 'hero' || scrollProgress < 0.14) {
-      // Hero: Core is dominant in center-right, framing the oversized left typography
+    // 7-State continuous camera & core journey
+    if (activeSection === 'hero') {
+      // 01 HERO: Core dominant in center-right, framing the oversized left typography
       coreX = isMobile ? 0 : 1.15
       coreY = isMobile ? 0.35 : 0
       coreZ = 0
@@ -47,8 +47,8 @@ export function SceneController({
       camX = 0
       camY = 0.4
       camZ = 6.8
-    } else if (activeSection === 'work' || (scrollProgress >= 0.14 && scrollProgress < 0.46)) {
-      // Work: Camera dollys in, Core shifts rightward, creating a stage companion
+    } else if (activeSection === 'work') {
+      // 02 WORK: Camera dollys in, Core shifts rightward, creating a stage companion
       coreX = isMobile ? 0 : 3.2
       coreY = -0.3
       coreZ = -1.0
@@ -56,8 +56,8 @@ export function SceneController({
       camX = isMobile ? 0 : 0.6
       camY = 0.1
       camZ = 7.2
-    } else if (activeSection === 'about' || (scrollProgress >= 0.46 && scrollProgress < 0.66)) {
-      // About: Camera orbits around the core, framing 'I BUILD INTELLIGENT SYSTEMS'
+    } else if (activeSection === 'about') {
+      // 03 ABOUT: Camera orbits around the core, framing 'I BUILD INTELLIGENT SYSTEMS'
       coreX = isMobile ? 0 : -2.8
       coreY = 0.2
       coreZ = -0.8
@@ -65,26 +65,35 @@ export function SceneController({
       camX = isMobile ? 0 : -0.8
       camY = 0.3
       camZ = 6.4
-    } else if (activeSection === 'stack' || (scrollProgress >= 0.66 && scrollProgress < 0.84)) {
-      // Stack: Camera moves closer into the 3D network, Core steps down/back
+    } else if (activeSection === 'build-log') {
+      // 04 BUILD LOG: Camera moves through the computational environment
       coreX = 0
-      coreY = -1.8
+      coreY = -0.25
+      coreZ = -2.0
+      coreScale = isMobile ? 0.55 : 0.75
+      camX = 0
+      camY = 0.15
+      camZ = 7.0
+    } else if (activeSection === 'stack') {
+      // 05 STACK: Camera moves closer into 3D network, Core steps down
+      coreX = 0
+      coreY = -1.9
       coreZ = -3.2
       coreScale = 0.45
       camX = 0
       camY = 0
-      camZ = 5.8
-    } else if (scrollProgress >= 0.84 && scrollProgress < 0.92) {
-      // Build Log / GitHub: Camera pulls back to wide perspective
+      camZ = 5.6
+    } else if (activeSection === 'github') {
+      // 06 GITHUB: Wide data perspective, data streams intensify
       coreX = 0
       coreY = -0.2
       coreZ = -2.0
-      coreScale = 0.75
+      coreScale = isMobile ? 0.55 : 0.75
       camX = 0
       camY = 0.2
       camZ = 7.8
-    } else if (activeSection === 'contact' || scrollProgress >= 0.92) {
-      // Contact: Cinematic pull-back, Core dissolves into quantum singularity
+    } else if (activeSection === 'contact') {
+      // 07 CONTACT: Cinematic pull-back, Core dissolves into quantum singularity
       coreX = 0
       coreY = 0
       coreZ = -5
@@ -94,16 +103,20 @@ export function SceneController({
       camZ = 10.5
     }
 
+    // Continuous subtle scroll depth progression
+    const scrollDepth = (scrollProgress - 0.5) * 0.35
+    camZ += scrollDepth
+
     // Pass computed object transform to parent
     onCoreTransform({
       position: [coreX, coreY, coreZ],
       scale: coreScale,
     })
 
-    // Cinematic mouse parallax (5-15px equivalent)
+    // Cinematic mouse parallax (controlled, 5-15px equivalent)
     targetCamPos.current.set(
-      camX + mouse.x * 0.35,
-      camY - mouse.y * 0.25,
+      camX + mouse.x * (isMobile ? 0.1 : 0.35),
+      camY - mouse.y * (isMobile ? 0.08 : 0.25),
       camZ
     )
     targetLookAt.current.set(lookX, lookY, lookZ)
