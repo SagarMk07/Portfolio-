@@ -170,6 +170,9 @@ export function PortfolioScene({
           {/* Specular Rim Light (Acid Lime) */}
           <directionalLight position={[-6, 4, -4]} intensity={1.5} color="#c7ff3d" />
 
+          {/* Soft Neutral Fill Light to lift shadowed facets on the left/lower flank */}
+          <directionalLight position={[-4, -2, 4]} intensity={0.55} color="#e2e5dc" />
+
           {/* Soft Distance Fog seamlessly blending into #080908 */}
           <fog attach="fog" args={['#080908', 8, 26]} />
 
@@ -181,6 +184,7 @@ export function PortfolioScene({
             <DataStreams
               visible={activeSection !== 'contact'}
               activeSection={activeSection}
+              activeProjectIndex={activeProjectIndex}
               mouseRef={mouseRef}
             />
 
@@ -196,12 +200,17 @@ export function PortfolioScene({
             {/* Interactive 3D Neural Network for the STACK section */}
             <NeuralNetwork
               visible={activeSection === 'stack'}
+              activeProjectIndex={activeProjectIndex}
               onHoverNode={onHoverTechNode}
               mouseRef={mouseRef}
             />
 
             {/* Atmospheric Micro-Particles */}
-            <ParticleField visible={activeSection !== 'contact'} mouseRef={mouseRef} />
+            <ParticleField
+              visible={activeSection !== 'contact'}
+              activeSection={activeSection}
+              mouseRef={mouseRef}
+            />
 
             {/* Cinematic Camera Journey Controller */}
             <SceneController

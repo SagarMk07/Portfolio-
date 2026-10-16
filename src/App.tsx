@@ -154,7 +154,18 @@ function Hero({ onOpenResume }: { onOpenResume: () => void }) {
             onClick={onOpenResume}
             title="View verified Curriculum Vitae"
           >
-            RESUME / CV <ArrowUpRight size={13} />
+            VIEW RESUME ↗
+          </button>
+          <button
+            type="button"
+            className="resume-link-btn"
+            onClick={() => {
+              onOpenResume()
+              setTimeout(() => window.print(), 350)
+            }}
+            title="Download / Print Resume as PDF"
+          >
+            DOWNLOAD RESUME ↓
           </button>
         </div>
 

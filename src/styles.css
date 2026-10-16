@@ -500,12 +500,13 @@ html.has-custom-cursor * {
   font-size: 9px;
   letter-spacing: 0.11em;
   color: #a6a8a1;
-  transition: color var(--motion-fast);
+  transition: color var(--motion-fast) var(--cinematic-ease), transform var(--motion-fast) var(--cinematic-ease);
 }
 
 .hero-links a:hover,
 .contact-socials a:hover {
   color: var(--acid);
+  transform: translateY(-1px);
 }
 
 .scroll-cue {
@@ -1497,8 +1498,8 @@ html.has-custom-cursor * {
 }
 
 .contact-gradient-lead {
-  height: 100px;
-  background: linear-gradient(180deg, transparent 0%, rgba(199, 255, 61, 0.12) 65%, #c7ff3d 100%);
+  height: clamp(180px, 24vh, 280px);
+  background: linear-gradient(180deg, transparent 0%, rgba(199, 255, 61, 0.03) 40%, rgba(199, 255, 61, 0.18) 75%, #c7ff3d 100%);
   margin-bottom: -1px;
   pointer-events: none;
 }
@@ -2780,11 +2781,12 @@ html.has-custom-cursor * {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: color var(--motion-fast);
+  transition: color var(--motion-fast) var(--cinematic-ease), transform var(--motion-fast) var(--cinematic-ease);
 }
 
 .resume-link-btn:hover {
   color: var(--acid);
+  transform: translateY(-1px);
 }
 
 .resume-modal-overlay {

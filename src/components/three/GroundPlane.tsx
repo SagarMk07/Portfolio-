@@ -2,30 +2,60 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 
 export function GroundPlane({ position = [0, -3.2, 0] }: { position?: [number, number, number] }) {
+  // Soft radial contact shadow texture generated procedurally
+  const shadowTexture = useMemo(() => {
+    if (typeof document === 'undefined') return null
+    const canvas = document.createElement('canvas')
+    canvas.width = 256
+    canvas.height = 256
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+      const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128)
+      gradient.addColorStop(0, 'rgba(0, 0, 0, 0.85)')
+      gradient.addColorStop(0.35, 'rgba(0, 0, 0, 0.52)')
+      gradient.addColorStop(0.68, 'rgba(0, 0, 0, 0.18)')
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+      ctx.fillStyle = gradient
+      ctx.fillRect(0, 0, 256, 256)
+    }
+    const tex = new THREE.CanvasTexture(canvas)
+    return tex
+  }, [])
+
   const materials = useMemo(() => {
-    // Deep dark metallic reflective floor that captures the dynamic lime point light reflections
+    // Deep dark metallic reflective floor with specular roughness
     const floor = new THREE.MeshStandardMaterial({
       color: '#060806',
-      roughness: 0.32,
-      metalness: 0.92,
+      roughness: 0.28,
+      metalness: 0.94,
     })
 
-    // Subtle orthogonal grid lines
+    // Subtle orthogonal coordinate lines
     const gridLines = new THREE.LineBasicMaterial({
       color: '#ffffff',
       transparent: true,
-      opacity: 0.038,
+      opacity: 0.032,
     })
 
     // Concentric radial coordinate target rings
     const ringLines = new THREE.LineBasicMaterial({
       color: '#c7ff3d',
       transparent: true,
-      opacity: 0.09,
+      opacity: 0.07,
     })
 
-    return { floor, gridLines, ringLines }
-  }, [])
+    // Contact shadow material
+    const contactShadow = shadowTexture
+      ? new THREE.MeshBasicMaterial({
+          map: shadowTexture,
+          transparent: true,
+          opacity: 0.82,
+          depthWrite: false,
+        })
+      : null
+
+    return { floor, gridLines, ringLines, contactShadow }
+  }, [shadowTexture])
 
   const { gridGeometry, ringGeometries } = useMemo(() => {
     // 1. Orthogonal coordinate grid
@@ -63,6 +93,13 @@ export function GroundPlane({ position = [0, -3.2, 0] }: { position?: [number, n
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow material={materials.floor}>
         <planeGeometry args={[90, 90]} />
       </mesh>
+
+      {/* Realistic Soft Contact Shadow directly beneath the core sculpture */}
+      {materials.contactShadow && (
+        <mesh position={[1.15, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]} material={materials.contactShadow}>
+          <planeGeometry args={[8.5, 8.5]} />
+        </mesh>
+      )}
 
       {/* Subtle Orthogonal Ground Grid */}
       <lineSegments geometry={gridGeometry} material={materials.gridLines} />

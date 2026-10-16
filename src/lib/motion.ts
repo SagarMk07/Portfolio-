@@ -40,7 +40,7 @@ export const imageRevealVariants = {
 
 /* Scroll Depth Variants for Projects */
 export const projectDepthVariants = {
-  hidden: { opacity: 0, scale: 1.08, y: 40 },
+  hidden: { opacity: 0, scale: 0.96, y: 32 },
   visible: {
     opacity: 1,
     scale: 1,

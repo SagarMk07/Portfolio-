@@ -3,7 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import type { Project } from '../data/projects'
 import { ProjectArtwork } from './ProjectArtwork'
-import { projectDepthVariants, revealItemVariants, staggerVariants } from '../lib/motion'
+import { cinematicEase, projectDepthVariants, revealItemVariants, staggerVariants } from '../lib/motion'
 
 const MotionLink = motion(Link)
 
@@ -28,8 +28,10 @@ export function ProjectRow({
       variants={projectDepthVariants}
       initial={reduceMotion ? false : 'hidden'}
       whileInView={reduceMotion ? undefined : 'visible'}
+      whileHover={reduceMotion ? undefined : { y: -4, transition: { duration: 0.28, ease: cinematicEase } }}
       viewport={{ once: false, amount: 0.25 }}
       onViewportEnter={() => onInView?.(index)}
+      onMouseEnter={() => onInView?.(index)}
     >
       <motion.div className="project-copy" variants={staggerVariants}>
         <motion.div className="project-meta" variants={revealItemVariants}>

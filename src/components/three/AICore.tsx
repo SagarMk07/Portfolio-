@@ -25,20 +25,20 @@ export function AICore({
   const nucleusRef = useRef<THREE.Mesh>(null)
   const pointLightRef = useRef<THREE.PointLight>(null)
 
-  // Memoized industrial materials
+  // Memoized industrial PBR materials with physical roughness
   const materials = useMemo(() => {
     return {
-      // Dark gunmetal exoskeleton with specular facets
+      // Dark brushed gunmetal exoskeleton with specular facets
       exoskeleton: new THREE.MeshStandardMaterial({
-        color: '#121410',
-        metalness: 0.94,
-        roughness: 0.16,
+        color: '#141712',
+        metalness: 0.92,
+        roughness: 0.22,
         flatShading: true,
       }),
       exoskeletonEdges: new THREE.LineBasicMaterial({
         color: '#ffffff',
         transparent: true,
-        opacity: 0.45,
+        opacity: 0.38,
       }),
       // Crystalline processor core
       crystal: new THREE.MeshStandardMaterial({
@@ -110,9 +110,12 @@ export function AICore({
     const time = state.clock.getElapsedTime()
     const mouse = mouseRef.current
 
+    // Contact section deceleration factor
+    const contactDamping = activeSection === 'contact' ? 0.05 : 1.0
+
     if (rootGroupRef.current) {
       // Smooth physical position lerp
-      const floatY = Math.sin(time * 0.95) * 0.12
+      const floatY = Math.sin(time * 0.95) * 0.12 * contactDamping
       rootGroupRef.current.position.y = THREE.MathUtils.lerp(
         rootGroupRef.current.position.y,
         position[1] + floatY,
@@ -120,7 +123,7 @@ export function AICore({
       )
       rootGroupRef.current.position.x = THREE.MathUtils.lerp(
         rootGroupRef.current.position.x,
-        position[0] + mouse.x * 0.45,
+        position[0] + mouse.x * 0.45 * contactDamping,
         0.05
       )
       rootGroupRef.current.position.z = THREE.MathUtils.lerp(
@@ -130,8 +133,8 @@ export function AICore({
       )
 
       // Mouse-driven subtle angular tilt (restrained, 5-15px equivalent)
-      const targetRotX = mouse.y * 0.18
-      const targetRotY = mouse.x * 0.25
+      const targetRotX = mouse.y * 0.18 * contactDamping
+      const targetRotY = mouse.x * 0.25 * contactDamping
       rootGroupRef.current.rotation.x = THREE.MathUtils.lerp(rootGroupRef.current.rotation.x, targetRotX, 0.05)
       rootGroupRef.current.rotation.y = THREE.MathUtils.lerp(rootGroupRef.current.rotation.y, targetRotY, 0.05)
 
@@ -148,38 +151,49 @@ export function AICore({
       )
     }
 
-    // Dynamic pulse frequency per project
+    // Dynamic pulse frequency & breathing per project
     let pulseFrequency = 2.4
     if (activeProjectIndex === 0) pulseFrequency = 4.2
     else if (activeProjectIndex === 1) pulseFrequency = 3.0
     else if (activeProjectIndex === 2) pulseFrequency = 2.0
     else if (activeProjectIndex === 3) pulseFrequency = 1.6
 
+    // Project 04 (Rainwater Recommendation): Organic breathing expansion of the core
+    let organicScale = 1.0
+    if (activeProjectIndex === 3) {
+      organicScale = 1.0 + Math.sin(time * 1.6) * 0.09
+      materials.exoskeleton.roughness = 0.28
+    } else {
+      materials.exoskeleton.roughness = 0.22
+    }
+
     // 1. Exoskeleton multi-axis rotation
     if (exoRef.current) {
-      exoRef.current.rotation.x += delta * 0.18
-      exoRef.current.rotation.y += delta * 0.22
+      exoRef.current.rotation.x += delta * 0.18 * contactDamping
+      exoRef.current.rotation.y += delta * 0.22 * contactDamping
+      exoRef.current.scale.setScalar(organicScale)
     }
     if (exoEdgesRef.current) {
       exoEdgesRef.current.rotation.x = exoRef.current?.rotation.x || 0
       exoEdgesRef.current.rotation.y = exoRef.current?.rotation.y || 0
+      exoEdgesRef.current.scale.setScalar(organicScale)
     }
 
     // 2. Crystalline processor reverse counter-rotation
     if (crystalCoreRef.current) {
-      crystalCoreRef.current.rotation.y -= delta * 0.32
-      crystalCoreRef.current.rotation.z += delta * 0.25
+      crystalCoreRef.current.rotation.y -= delta * 0.32 * contactDamping
+      crystalCoreRef.current.rotation.z += delta * 0.25 * contactDamping
     }
 
     // 3. Quantum nucleus pulse & point light breathing
     if (nucleusRef.current) {
-      const pulse = 1 + Math.sin(time * pulseFrequency) * 0.22
+      const pulse = (1 + Math.sin(time * pulseFrequency) * 0.22) * contactDamping
       nucleusRef.current.scale.setScalar(pulse)
-      nucleusRef.current.rotation.x += delta * 0.5
-      nucleusRef.current.rotation.z -= delta * 0.4
+      nucleusRef.current.rotation.x += delta * 0.5 * contactDamping
+      nucleusRef.current.rotation.z -= delta * 0.4 * contactDamping
     }
     if (pointLightRef.current) {
-      pointLightRef.current.intensity = 2.0 + Math.sin(time * pulseFrequency) * 1.0
+      pointLightRef.current.intensity = (2.0 + Math.sin(time * pulseFrequency) * 1.0) * contactDamping
     }
   })
 

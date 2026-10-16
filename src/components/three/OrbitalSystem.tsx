@@ -21,24 +21,25 @@ export function OrbitalSystem({ activeProjectIndex = -1, activeSection = 'hero' 
     const nGeo = new THREE.SphereGeometry(0.065, 12, 12)
     const sGeo = new THREE.SphereGeometry(0.075, 12, 12)
 
+    // Brushed titanium / tungsten physical material
     const gMat = new THREE.MeshStandardMaterial({
-      color: '#282b24',
-      metalness: 0.92,
-      roughness: 0.22,
+      color: '#1a1d17',
+      metalness: 0.90,
+      roughness: 0.25,
     })
     const aMat = new THREE.MeshStandardMaterial({
       color: '#c7ff3d',
       emissive: '#c7ff3d',
       emissiveIntensity: 1.2,
-      metalness: 0.5,
-      roughness: 0.2,
+      metalness: 0.6,
+      roughness: 0.18,
     })
     const sMat = new THREE.MeshStandardMaterial({
       color: '#f1f1ed',
       emissive: '#c7ff3d',
-      emissiveIntensity: 0.6,
+      emissiveIntensity: 0.5,
       roughness: 0.25,
-      metalness: 0.8,
+      metalness: 0.82,
     })
 
     return {
@@ -72,26 +73,32 @@ export function OrbitalSystem({ activeProjectIndex = -1, activeSection = 'hero' 
     let ring3Speed = 0.22
 
     if (activeProjectIndex === 0) {
-      // MedAssist AI: High frequency rotation
-      ring1Speed = 0.95
-      ring2Speed = 0.7
+      // MedAssist AI: High frequency rotation & heightened caliber pulse
+      ring1Speed = 1.05
+      ring2Speed = 0.85
+      accentMat.emissiveIntensity = 2.4
     } else if (activeProjectIndex === 1) {
       // SmartShopper Guardian: Angular ring 2 surge
       ring2Speed = 1.15
       ring1Speed = 0.5
+      accentMat.emissiveIntensity = 1.4
     } else if (activeProjectIndex === 2) {
       // Trip Planner: Broad outer orbital velocity
       ring3Speed = 0.65
       ring1Speed = 0.4
+      accentMat.emissiveIntensity = 1.2
     } else if (activeProjectIndex === 3) {
       // Rainwater: Deep contemplative harmonic roll
       ring1Speed = 0.2
       ring2Speed = 0.22
       ring3Speed = 0.15
+      accentMat.emissiveIntensity = 1.0
+    } else {
+      accentMat.emissiveIntensity = 1.2
     }
 
-    // In contact section, decelerate orbital rings toward standstill
-    const sectionMultiplier = activeSection === 'contact' ? 0.05 : 1.0
+    // In contact section, decelerate orbital rings toward quiet standstill
+    const sectionMultiplier = activeSection === 'contact' ? 0.03 : 1.0
     ring1Speed *= sectionMultiplier
     ring2Speed *= sectionMultiplier
     ring3Speed *= sectionMultiplier
@@ -109,7 +116,7 @@ export function OrbitalSystem({ activeProjectIndex = -1, activeSection = 'hero' 
       ring3Ref.current.rotation.x -= delta * (ring3Speed * 0.7)
     }
     if (satellitesGroupRef.current) {
-      satellitesGroupRef.current.rotation.z += delta * 0.3
+      satellitesGroupRef.current.rotation.z += delta * 0.3 * sectionMultiplier
     }
   })
 

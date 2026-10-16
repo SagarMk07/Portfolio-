@@ -13,166 +13,164 @@ export interface TechNodeData {
 }
 
 export const techNodes: TechNodeData[] = [
-  // 1. AI / ML Constellation Cluster
-  {
-    id: 'ai-core',
-    name: 'AI / ML',
-    category: 'ai',
-    position: [-2.2, 1.8, 0.8],
-    connections: ['python', 'ml', 'vision', 'genai', 'ai-apis'],
-    info: 'Multimodal AI systems, computer vision, and neural reasoning pipelines.',
-  },
+  // 1. Relational Chain 1: PYTHON -> AI / ML -> FASTAPI -> POSTGRESQL / SUPABASE
   {
     id: 'python',
     name: 'Python',
     category: 'lang',
-    position: [-3.6, 0.6, 1.4],
-    connections: ['ai-core', 'ml', 'data-analysis', 'backend-core'],
-    info: 'Primary language for deep learning, scientific computing, and system scripts.',
+    position: [-3.4, 0.8, 1.2],
+    connections: ['ai-core', 'fastapi', 'ml'],
+    info: 'Core language for machine learning, model training, and system pipelines.',
+  },
+  {
+    id: 'ai-core',
+    name: 'AI / ML',
+    category: 'ai',
+    position: [-2.0, 1.8, 0.6],
+    connections: ['python', 'fastapi', 'ml', 'vision', 'genai'],
+    info: 'Neural architectures, multimodal processing, and automated reasoning engines.',
   },
   {
     id: 'ml',
     name: 'Machine Learning',
     category: 'ai',
-    position: [-1.6, 0.2, -0.6],
-    connections: ['ai-core', 'python', 'genai', 'data-analysis'],
+    position: [-2.6, 2.8, -0.4],
+    connections: ['ai-core', 'python', 'vision'],
     info: 'Supervised, unsupervised, and recommendation models for real-world telemetry.',
   },
   {
     id: 'vision',
     name: 'Computer Vision',
     category: 'ai',
-    position: [-3.5, 2.4, -0.4],
-    connections: ['ai-core', 'genai'],
+    position: [-1.2, 3.0, 0.2],
+    connections: ['ai-core', 'ml'],
     info: 'OCR, document feature extraction, and real-time visual parsing.',
   },
   {
     id: 'genai',
     name: 'Generative AI',
     category: 'ai',
-    position: [-0.6, 2.2, 0.9],
-    connections: ['ai-core', 'vision', 'ml', 'frontend-core', 'ai-apis'],
+    position: [-0.4, 2.2, 0.8],
+    connections: ['ai-core', 'fastapi', 'frontend-core'],
     info: 'Gemini, Vertex AI, and prompt/vector-assisted workflows.',
   },
   {
-    id: 'ai-apis',
-    name: 'AI APIs',
-    category: 'ai',
-    position: [-1.8, 3.1, 0.2],
-    connections: ['ai-core', 'genai', 'rest-apis'],
-    info: 'Structured LLM model endpoints, schema parsing, and multimodal routing.',
+    id: 'fastapi',
+    name: 'FastAPI',
+    category: 'backend',
+    position: [-0.6, 0.5, 1.1],
+    connections: ['ai-core', 'python', 'postgres', 'backend-core'],
+    info: 'High-performance asynchronous REST endpoints bridging ML models to interfaces.',
+  },
+  {
+    id: 'postgres',
+    name: 'PostgreSQL',
+    category: 'data',
+    position: [0.6, -0.4, 1.0],
+    connections: ['fastapi', 'supabase', 'cloud-core'],
+    info: 'Relational data modeling, ACID transactions, and structured indexing.',
+  },
+  {
+    id: 'supabase',
+    name: 'Supabase',
+    category: 'data',
+    position: [1.8, -1.2, 0.8],
+    connections: ['postgres', 'cloud-core', 'backend-core'],
+    info: 'Postgres persistence, Row Level Security, and real-time data sync.',
   },
 
-  // 2. Core Languages Cluster
-  {
-    id: 'cpp',
-    name: 'C++',
-    category: 'lang',
-    position: [-4.4, -0.8, -1.2],
-    connections: ['python', 'systems'],
-    info: 'Algorithms, memory efficiency, and computational performance.',
-  },
-  {
-    id: 'systems',
-    name: 'Systems / DSA',
-    category: 'lang',
-    position: [-3.8, -2.1, -0.6],
-    connections: ['cpp'],
-    info: 'Algorithmic efficiency, time-space optimization, and memory architectures.',
-  },
+  // 2. Relational Chain 2: TYPESCRIPT -> REACT -> VITE
   {
     id: 'typescript',
     name: 'TypeScript',
     category: 'lang',
-    position: [0.4, 0.9, 1.1],
-    connections: ['frontend-core', 'backend-core', 'react', 'vite'],
+    position: [0.8, 1.6, 1.2],
+    connections: ['react', 'vite', 'frontend-core', 'fastapi'],
     info: 'Strict type safety across full-stack applications and extensions.',
-  },
-
-  // 3. Full Stack & Frontend Cluster
-  {
-    id: 'frontend-core',
-    name: 'FULL STACK',
-    category: 'frontend',
-    position: [2.0, 1.7, 0.4],
-    connections: ['typescript', 'react', 'tailwind', 'genai', 'vite'],
-    info: 'Modern reactive interfaces and high-performance interactive architectures.',
   },
   {
     id: 'react',
     name: 'React',
     category: 'frontend',
-    position: [3.6, 1.9, 0.9],
-    connections: ['frontend-core', 'typescript', 'vite', 'tailwind'],
+    position: [2.4, 2.0, 0.9],
+    connections: ['typescript', 'vite', 'frontend-core', 'tailwind'],
     info: 'Component-driven reactive web applications and component systems.',
   },
   {
     id: 'vite',
     name: 'Vite',
     category: 'frontend',
-    position: [1.8, 2.8, 0.8],
+    position: [1.6, 3.1, 0.5],
     connections: ['react', 'typescript', 'frontend-core'],
     info: 'Fast ESM bundler, rollup optimization, and lightning-fast developer workflow.',
+  },
+  {
+    id: 'frontend-core',
+    name: 'FULL STACK',
+    category: 'frontend',
+    position: [2.0, 0.8, 0.4],
+    connections: ['typescript', 'react', 'tailwind', 'genai', 'vite'],
+    info: 'Modern reactive interfaces and high-performance interactive architectures.',
   },
   {
     id: 'tailwind',
     name: 'Tailwind CSS',
     category: 'frontend',
-    position: [3.2, 3.0, -0.5],
+    position: [3.4, 2.9, -0.4],
     connections: ['frontend-core', 'react'],
     info: 'Design system tokens and responsive utility layouts.',
   },
 
-  // 4. Backend & API Cluster
+  // 3. Relational Chain 3: C++ -> DSA -> SYSTEMS
+  {
+    id: 'cpp',
+    name: 'C++',
+    category: 'lang',
+    position: [-4.2, -1.0, -0.8],
+    connections: ['dsa', 'python'],
+    info: 'Algorithms, memory efficiency, and computational performance.',
+  },
+  {
+    id: 'dsa',
+    name: 'DSA',
+    category: 'lang',
+    position: [-3.2, -2.0, -0.4],
+    connections: ['cpp', 'systems'],
+    info: 'Algorithmic efficiency, time-space optimization, and computational rigor.',
+  },
+  {
+    id: 'systems',
+    name: 'Systems',
+    category: 'lang',
+    position: [-1.8, -2.5, 0.2],
+    connections: ['dsa', 'cpp', 'backend-core'],
+    info: 'Low-level architecture, memory management, and concurrent execution.',
+  },
+
+  // 4. Backend & Cloud Support
   {
     id: 'backend-core',
     name: 'BACKEND',
     category: 'backend',
-    position: [0.8, -1.1, 0.5],
-    connections: ['typescript', 'python', 'node', 'cloud-core', 'rest-apis'],
+    position: [0.2, -1.4, 0.6],
+    connections: ['fastapi', 'systems', 'postgres', 'cloud-core', 'rest-apis'],
     info: 'Scalable service endpoints, asynchronous processors, and APIs.',
-  },
-  {
-    id: 'node',
-    name: 'Node.js',
-    category: 'backend',
-    position: [2.0, -0.3, 1.3],
-    connections: ['backend-core', 'typescript', 'rest-apis'],
-    info: 'Asynchronous event-driven server runtime and API integrations.',
   },
   {
     id: 'rest-apis',
     name: 'REST APIs',
     category: 'backend',
-    position: [0.2, -2.2, 0.9],
-    connections: ['backend-core', 'node', 'ai-apis'],
+    position: [-0.8, -2.2, 0.8],
+    connections: ['backend-core', 'fastapi'],
     info: 'Deterministic REST communication contracts, rate-limiting, and webhooks.',
   },
-
-  // 5. Data & Cloud Cluster
   {
     id: 'cloud-core',
     name: 'DATA & CLOUD',
     category: 'data',
-    position: [3.0, -1.7, -0.6],
-    connections: ['backend-core', 'supabase', 'firebase', 'data-analysis'],
+    position: [2.8, -1.8, -0.5],
+    connections: ['backend-core', 'supabase', 'firebase'],
     info: 'Cloud datastores, document databases, and persistence layers.',
-  },
-  {
-    id: 'data-analysis',
-    name: 'Data Analysis',
-    category: 'data',
-    position: [-1.4, -1.0, -1.4],
-    connections: ['python', 'ml', 'cloud-core'],
-    info: 'Statistical inspection, data hygiene, and anomaly detection.',
-  },
-  {
-    id: 'supabase',
-    name: 'Supabase',
-    category: 'data',
-    position: [4.2, -1.0, 0.7],
-    connections: ['cloud-core', 'backend-core'],
-    info: 'Postgres persistence, Row Level Security, and real-time data sync.',
   },
   {
     id: 'firebase',
@@ -182,25 +180,21 @@ export const techNodes: TechNodeData[] = [
     connections: ['cloud-core'],
     info: 'NoSQL Firestore datastores, authentication, and serverless hosting.',
   },
-
-  // 6. Tools & Dev Workspace Cluster
-  {
-    id: 'git',
-    name: 'Git & GitHub',
-    category: 'tools',
-    position: [-2.9, -1.8, 1.2],
-    connections: ['backend-core', 'python', 'typescript'],
-    info: 'Distributed version control, branch isolation, and collaborative review.',
-  },
 ]
 
 interface NeuralNetworkProps {
   visible: boolean
+  activeProjectIndex?: number
   onHoverNode?: (node: TechNodeData | null) => void
   mouseRef: React.MutableRefObject<{ x: number; y: number }>
 }
 
-export function NeuralNetwork({ visible, onHoverNode, mouseRef }: NeuralNetworkProps) {
+export function NeuralNetwork({
+  visible,
+  activeProjectIndex = -1,
+  onHoverNode,
+  mouseRef,
+}: NeuralNetworkProps) {
   const groupRef = useRef<THREE.Group>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
 
@@ -245,12 +239,12 @@ export function NeuralNetwork({ visible, onHoverNode, mouseRef }: NeuralNetworkP
     // Subtle 3D spatial rotation response to mouse
     groupRef.current.rotation.y = THREE.MathUtils.lerp(
       groupRef.current.rotation.y,
-      Math.sin(time * 0.18) * 0.1 + mouse.x * 0.32,
+      Math.sin(time * 0.18) * 0.08 + mouse.x * 0.28,
       0.05
     )
     groupRef.current.rotation.x = THREE.MathUtils.lerp(
       groupRef.current.rotation.x,
-      Math.cos(time * 0.22) * 0.06 - mouse.y * 0.22,
+      Math.cos(time * 0.22) * 0.05 - mouse.y * 0.18,
       0.05
     )
 
@@ -261,11 +255,17 @@ export function NeuralNetwork({ visible, onHoverNode, mouseRef }: NeuralNetworkP
     )
   })
 
+  // Project 02 (SmartShopper Guardian): Highlights Frontend & Extension cluster
+  const project2Cluster = useMemo(() => new Set(['frontend-core', 'typescript', 'react', 'rest-apis']), [])
+
   return (
     <group ref={groupRef} position={[0, 0, -0.5]}>
       {/* 3D Laser Connection Lines */}
       {lines.map((line, idx) => {
-        const isHighlighted = hoveredId === line.idA || hoveredId === line.idB
+        const isHoverPair = hoveredId === line.idA || hoveredId === line.idB
+        const isProject2Pair = activeProjectIndex === 1 && (project2Cluster.has(line.idA) && project2Cluster.has(line.idB))
+        const isHighlighted = isHoverPair || isProject2Pair
+
         const points = [new THREE.Vector3(...line.from), new THREE.Vector3(...line.to)]
         const lineGeo = new THREE.BufferGeometry().setFromPoints(points)
 
@@ -274,7 +274,7 @@ export function NeuralNetwork({ visible, onHoverNode, mouseRef }: NeuralNetworkP
             <lineBasicMaterial
               color={isHighlighted ? '#c7ff3d' : '#ffffff'}
               transparent
-              opacity={isHighlighted ? 0.95 : hoveredId ? 0.04 : 0.12}
+              opacity={isHighlighted ? 0.95 : hoveredId ? 0.03 : 0.10}
             />
           </lineSegments>
         )
@@ -288,11 +288,13 @@ export function NeuralNetwork({ visible, onHoverNode, mouseRef }: NeuralNetworkP
           (nodeMap.get(hoveredId)?.connections.includes(node.id) ||
             node.connections.includes(hoveredId))
 
+        const isProject2Active = activeProjectIndex === 1 && project2Cluster.has(node.id)
+
         const isCoreNode = node.category.includes('core') || node.id === 'ai-core'
         const nodeRadius = isCoreNode ? 0.22 : 0.15
-        const activeColor = isHovered ? '#ffffff' : isConnected ? '#c7ff3d' : '#8f9286'
-        const emissiveColor = isHovered || isConnected ? '#c7ff3d' : '#000000'
-        const emissiveIntensity = isHovered ? 2.8 : isConnected ? 1.5 : 0
+        const activeColor = isHovered ? '#ffffff' : isConnected || isProject2Active ? '#c7ff3d' : '#8f9286'
+        const emissiveColor = isHovered || isConnected || isProject2Active ? '#c7ff3d' : '#000000'
+        const emissiveIntensity = isHovered ? 2.8 : isConnected ? 1.6 : isProject2Active ? 1.2 : 0
 
         return (
           <group
@@ -300,7 +302,7 @@ export function NeuralNetwork({ visible, onHoverNode, mouseRef }: NeuralNetworkP
             position={[
               node.position[0],
               node.position[1],
-              node.position[2] + (isHovered ? 0.65 : 0),
+              node.position[2] + (isHovered ? 0.55 : 0),
             ]}
           >
             {/* Interactive 3D Sphere */}
@@ -326,7 +328,7 @@ export function NeuralNetwork({ visible, onHoverNode, mouseRef }: NeuralNetworkP
             </mesh>
 
             {/* Glowing Target Ring on Active Nodes */}
-            {(isHovered || isConnected) && (
+            {(isHovered || isConnected || isProject2Active) && (
               <mesh>
                 <ringGeometry args={[nodeRadius * 1.3, nodeRadius * 1.5, 32]} />
                 <meshBasicMaterial color="#c7ff3d" transparent opacity={0.75} side={THREE.DoubleSide} />
@@ -337,7 +339,7 @@ export function NeuralNetwork({ visible, onHoverNode, mouseRef }: NeuralNetworkP
             <Text
               position={[0, nodeRadius + 0.22, 0]}
               fontSize={0.16}
-              color={isHovered ? '#c7ff3d' : isConnected ? '#f1f1ed' : '#7f8376'}
+              color={isHovered ? '#c7ff3d' : isConnected || isProject2Active ? '#f1f1ed' : '#7f8376'}
               anchorX="center"
               anchorY="bottom"
               letterSpacing={0.07}
