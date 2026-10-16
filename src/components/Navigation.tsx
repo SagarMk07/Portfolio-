@@ -113,8 +113,13 @@ export function Navigation() {
     return () => window.removeEventListener('keydown', closeOnEscape)
   }, [open])
 
+  const isContact = activeSection === 'contact'
+
   return (
-    <header className="site-header" data-cursor-theme="dark">
+    <header
+      className={`site-header ${isContact ? 'is-contact-theme' : ''}`}
+      data-cursor-theme={isContact ? 'lime' : 'dark'}
+    >
       <Link className="brand" to="/" aria-label="Sagar Kalagudi home">
         <span>SAGAR</span>
         <i>/</i>

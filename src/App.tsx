@@ -561,7 +561,7 @@ function HomePage({
 }) {
   return (
     <>
-      <main id="top">
+      <main>
         <Hero onOpenResume={onOpenResume} />
         <Work onActiveProject={onActiveProject} />
         <About />

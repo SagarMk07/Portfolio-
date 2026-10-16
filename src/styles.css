@@ -283,6 +283,50 @@ html[data-scrolled=true] .site-header {
   will-change: transform;
 }
 
+/* Contact Section Header Theme Inversion (Black on Acid-Lime) */
+.site-header.is-contact-theme {
+  color: #080908;
+  border-bottom-color: rgba(8, 9, 8, 0.14);
+  background: rgba(199, 255, 61, 0.94);
+  backdrop-filter: blur(12px);
+}
+
+.site-header.is-contact-theme .brand,
+.site-header.is-contact-theme nav > a,
+.site-header.is-contact-theme .menu-toggle {
+  color: #080908;
+}
+
+.site-header.is-contact-theme nav > a::before {
+  background: #080908;
+}
+
+.site-header.is-contact-theme nav > a:hover,
+.site-header.is-contact-theme nav > a:focus-visible,
+.site-header.is-contact-theme nav > a.is-active-link {
+  color: #080908;
+}
+
+.site-header.is-contact-theme nav > a.is-active-link::after {
+  background: #080908;
+  box-shadow: 0 0 6px rgba(8, 9, 8, 0.4);
+}
+
+.site-header.is-contact-theme .nav-external {
+  border-color: rgba(8, 9, 8, 0.35);
+  color: #080908;
+}
+
+.site-header.is-contact-theme .nav-external:hover {
+  border-color: #080908;
+  background: #080908;
+  color: var(--acid);
+}
+
+.site-header.is-contact-theme .scroll-progress-bar {
+  background: #080908;
+}
+
 /* ==================================================
    4. PRECISION CUSTOM CURSOR
    ================================================== */
@@ -2412,31 +2456,35 @@ html.has-custom-cursor * {
   }
 
   .hero {
-    min-height: auto;
-    padding-top: 96px;
-    padding-bottom: 40px;
+    min-height: 100svh;
+    min-height: 100vh;
+    padding-top: calc(var(--nav-height) + 16px);
+    padding-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
   .hero-poster-grid {
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 20px;
     min-height: auto;
-    margin: 32px 0 36px;
+    margin: auto 0;
   }
   .hero-poster-right {
     padding-left: 0;
     border-left: 0;
-    padding-top: 20px;
+    padding-top: 16px;
     border-top: 1px solid var(--line);
   }
   .hero-top {
     font-size: 8px;
   }
   .hero-title {
-    font-size: clamp(52px, 16vw, 96px);
-    line-height: 0.8;
+    font-size: clamp(48px, 15vw, 88px);
+    line-height: 0.82;
   }
   .hero-lastname {
-    margin-left: 4vw;
+    margin-left: 3vw;
   }
   .hero-coordinate {
     font-size: 7px;
@@ -2444,16 +2492,28 @@ html.has-custom-cursor * {
     right: 6vw;
   }
   .hero-index {
-    top: 48%;
-    right: var(--gutter);
+    display: none;
   }
   .hero-bottom {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 32px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .hero-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+  }
+  .hero-links a,
+  .hero-links button {
+    font-size: 8px;
   }
   .scroll-cue {
-    align-self: flex-end;
+    align-self: center;
+    margin-left: auto;
   }
 
   .page-section {
@@ -2694,6 +2754,9 @@ html.has-custom-cursor * {
     right: 12px;
     justify-content: space-between;
     font-size: 7.5px;
+  }
+  .scroll-cue span {
+    display: none;
   }
 }
 

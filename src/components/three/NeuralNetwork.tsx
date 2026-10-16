@@ -248,6 +248,13 @@ export function NeuralNetwork({
       0.05
     )
 
+    // Immediate visibility culling when not in stack section
+    if (!visible) {
+      groupRef.current.visible = false
+      return
+    }
+    groupRef.current.visible = true
+
     // Visibility scale animation
     const targetScale = visible ? 1 : 0.0001
     groupRef.current.scale.setScalar(
@@ -259,7 +266,7 @@ export function NeuralNetwork({
   const project2Cluster = useMemo(() => new Set(['frontend-core', 'typescript', 'react', 'rest-apis']), [])
 
   return (
-    <group ref={groupRef} position={[0, 0, -0.5]}>
+    <group ref={groupRef} position={[0, 0, -0.5]} visible={visible}>
       {/* 3D Laser Connection Lines */}
       {lines.map((line, idx) => {
         const isHoverPair = hoveredId === line.idA || hoveredId === line.idB

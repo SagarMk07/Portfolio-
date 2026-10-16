@@ -58,74 +58,78 @@ export function SceneController({
     if (activeSection === 'hero') {
       // 01 HERO: Core dominant in center-right, framing the oversized left typography
       if (isUltraWide) {
-        coreX = 1.32
+        coreX = 1.05
         coreY = 0.0
-        coreScale = 1.52 // Visually dominant focal centerpiece on 1920x1080
-        camZ = isCoreHovered ? 6.45 : 6.65
-        lookX = 0.38
+        coreScale = 1.25 // Visually dominant focal centerpiece framing left typography
+        camZ = isCoreHovered ? 6.75 : 7.0
+        lookX = 0.26
       } else if (isDesktop) {
-        coreX = 1.18
-        coreY = 0.0
-        coreScale = 1.38
-        camZ = isCoreHovered ? 6.55 : 6.8
-        lookX = 0.32
-      } else if (isSmallDesktop) {
         coreX = 0.95
+        coreY = 0.0
+        coreScale = 1.12
+        camZ = isCoreHovered ? 6.95 : 7.2
+        lookX = 0.20
+      } else if (isSmallDesktop) {
+        coreX = 0.75
         coreY = 0.05
-        coreScale = 1.20
-        camZ = isCoreHovered ? 6.8 : 7.0
-        lookX = 0.25
+        coreZ = -0.5
+        coreScale = 0.95
+        camZ = isCoreHovered ? 7.0 : 7.2
+        lookX = 0.15
       } else if (isTablet) {
-        coreX = 0.40
-        coreY = 0.20
-        coreScale = 0.98
-        camZ = 7.2
-        lookX = 0.10
-      } else {
-        // Mobile 390x844 / 430x932: Centered above/between text, simplified camera
         coreX = 0.0
-        coreY = 0.32
-        coreScale = 0.78
-        camZ = 7.5
+        coreY = 0.35
+        coreZ = -1.5
+        coreScale = 0.72
+        camZ = 7.6
         lookX = 0.0
-        lookY = 0.10
+        lookY = 0.12
+      } else {
+        // Mobile 390x844 / 430x932: Centered behind typography in atmospheric depth
+        coreX = 0.0
+        coreY = 0.45
+        coreZ = -2.2
+        coreScale = 0.58
+        camZ = 8.0
+        lookX = 0.0
+        lookY = 0.15
       }
       camX = 0
       camY = isMobile ? 0.2 : 0.4
     } else if (activeSection === 'work') {
       // 02 WORK: Camera dollys in, Core shifts rightward, creating a companion frame
-      coreX = isMobile ? 0.0 : isTablet ? 1.8 : 3.2
-      coreY = isMobile ? -0.4 : -0.3
-      coreZ = isMobile ? -2.2 : -1.0
-      coreScale = isMobile ? 0.55 : 0.98
-      camX = isMobile ? 0.0 : 0.6
+      coreX = isMobile ? 0.0 : isTablet ? 1.4 : 2.4
+      coreY = isMobile ? -0.5 : -0.3
+      coreZ = isMobile ? -2.5 : -1.4
+      coreScale = isMobile ? 0.48 : 0.88
+      camX = isMobile ? 0.0 : 0.5
       camY = 0.1
       camZ = 7.2
-      lookX = isMobile ? 0.0 : 1.2
+      lookX = isMobile ? 0.0 : 1.0
       lookY = -0.1
       lookZ = -0.4
     } else if (activeSection === 'about') {
-      // 03 ABOUT: Camera orbits around the core to the left flank, calming complexity
-      coreX = isMobile ? 0.0 : isTablet ? -1.6 : -2.8
-      coreY = isMobile ? 0.4 : 0.2
-      coreZ = isMobile ? -2.0 : -0.8
-      coreScale = isMobile ? 0.55 : 0.92
-      camX = isMobile ? 0.0 : -0.8
-      camY = 0.3
-      camZ = 6.4
-      lookX = isMobile ? 0.0 : -0.9
-      lookY = 0.1
+      // 03 ABOUT: Ambient depth between left statement and right narrative
+      coreX = isMobile ? 0.0 : isTablet ? 0.0 : 0.6
+      coreY = isMobile ? 0.3 : 0.1
+      coreZ = isMobile ? -2.5 : -2.2
+      coreScale = isMobile ? 0.45 : 0.78
+      camX = 0.0
+      camY = 0.2
+      camZ = 6.8
+      lookX = 0.0
+      lookY = 0.0
       lookZ = -0.3
     } else if (activeSection === 'build-log') {
-      // 04 BUILD LOG: Camera moves along central axis through data environment
-      coreX = 0
-      coreY = -0.25
+      // 04 BUILD LOG: Frames the timeline on the left with the core in right midground
+      coreX = isMobile ? 0.0 : 1.4
+      coreY = -0.15
       coreZ = -2.0
-      coreScale = isMobile ? 0.50 : 0.75
+      coreScale = isMobile ? 0.45 : 0.72
       camX = 0
-      camY = 0.15
+      camY = 0.1
       camZ = 7.0
-      lookX = 0
+      lookX = isMobile ? 0.0 : 0.3
       lookY = 0
       lookZ = -1.0
     } else if (activeSection === 'stack') {

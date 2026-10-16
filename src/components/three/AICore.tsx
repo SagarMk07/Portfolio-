@@ -25,6 +25,7 @@ export function AICore({
   const exoEdgesRef = useRef<THREE.LineSegments>(null)
   const exoCageRef = useRef<THREE.LineSegments>(null)
   const crystalCoreRef = useRef<THREE.Mesh>(null)
+  const crystalEdgesRef = useRef<THREE.LineSegments>(null)
   const nucleusRef = useRef<THREE.Mesh>(null)
   const pointLightRef = useRef<THREE.PointLight>(null)
 
@@ -42,39 +43,41 @@ export function AICore({
   // MATERIALS: Studio PBR titanium, faceted gunmetal, & acid-lime emission
   // ----------------------------------------------------
   const materials = useMemo(() => {
-    // 1. Outer Dark Titanium Shell
+    // 1. Outer Dark Titanium Shell (translucent faceted sheen reveals inner quantum core)
     const exoskeleton = new THREE.MeshStandardMaterial({
-      color: '#10130e',
-      metalness: 0.95,
-      roughness: 0.16,
+      color: '#1a2217',
+      metalness: 0.92,
+      roughness: 0.28,
       flatShading: true,
+      transparent: true,
+      opacity: 0.76,
     })
 
     const exoskeletonEdges = new THREE.LineBasicMaterial({
-      color: '#ffffff',
+      color: '#c7ff3d',
       transparent: true,
-      opacity: 0.38,
+      opacity: 0.42,
     })
 
     const exoskeletonCage = new THREE.LineBasicMaterial({
       color: '#c7ff3d',
       transparent: true,
-      opacity: 0.18,
+      opacity: 0.16,
     })
 
     const cornerNode = new THREE.MeshStandardMaterial({
-      color: '#e4e7df',
+      color: '#dbe2d4',
       emissive: '#c7ff3d',
-      emissiveIntensity: 0.8,
-      roughness: 0.2,
-      metalness: 0.9,
+      emissiveIntensity: 0.5,
+      roughness: 0.22,
+      metalness: 0.88,
     })
 
     // 2. Middle Aerospace Orbital Gimbal Rings (Brushed titanium)
     const ringMat = new THREE.MeshStandardMaterial({
-      color: '#1b1e18',
-      metalness: 0.92,
-      roughness: 0.22,
+      color: '#20251c',
+      metalness: 0.94,
+      roughness: 0.20,
     })
 
     const tickMat = new THREE.LineBasicMaterial({
@@ -86,32 +89,40 @@ export function AICore({
     const telemetryBeamMat = new THREE.LineBasicMaterial({
       color: '#c7ff3d',
       transparent: true,
-      opacity: 0.12,
+      opacity: 0.15,
     })
 
     const satelliteMat = new THREE.MeshStandardMaterial({
-      color: '#f4f5f0',
+      color: '#f0f3eb',
       emissive: '#c7ff3d',
-      emissiveIntensity: 0.7,
-      metalness: 0.88,
+      emissiveIntensity: 0.55,
+      metalness: 0.90,
       roughness: 0.18,
     })
 
-    // 3. Inner Crystalline Octahedron
+    // 3. Inner Crystalline Octahedron & Luminous Edges
     const crystal = new THREE.MeshStandardMaterial({
-      color: '#161c12',
-      metalness: 0.88,
-      roughness: 0.10,
+      color: '#131e11',
+      metalness: 0.86,
+      roughness: 0.12,
       flatShading: true,
+      transparent: true,
+      opacity: 0.82,
+    })
+
+    const crystalEdgesMat = new THREE.LineBasicMaterial({
+      color: '#c7ff3d',
+      transparent: true,
+      opacity: 0.65,
     })
 
     // 4. Quantum Emissive Nucleus
     const nucleus = new THREE.MeshStandardMaterial({
       color: '#c7ff3d',
       emissive: '#c7ff3d',
-      emissiveIntensity: 2.2,
-      roughness: 0.08,
-      metalness: 0.4,
+      emissiveIntensity: 2.8,
+      roughness: 0.06,
+      metalness: 0.35,
     })
 
     return {
@@ -124,6 +135,7 @@ export function AICore({
       telemetryBeamMat,
       satelliteMat,
       crystal,
+      crystalEdgesMat,
       nucleus,
     }
   }, [])
@@ -132,26 +144,26 @@ export function AICore({
   // GEOMETRIES: Polyhedral monolith, aerospace gimbals, & telemetry ticks
   // ----------------------------------------------------
   const geometries = useMemo(() => {
-    // Outer Shell
-    const exoGeo = new THREE.IcosahedronGeometry(1.5, 0)
+    // Outer Shell (radius 1.45)
+    const exoGeo = new THREE.IcosahedronGeometry(1.45, 0)
     const exoEdges = new THREE.EdgesGeometry(exoGeo)
-    const exoCageGeo = new THREE.EdgesGeometry(new THREE.DodecahedronGeometry(1.72, 0))
-    const cornerNodeGeo = new THREE.SphereGeometry(0.065, 12, 12)
-    const bracketGeo = new THREE.BoxGeometry(0.12, 0.08, 0.14)
+    const exoCageGeo = new THREE.EdgesGeometry(new THREE.DodecahedronGeometry(1.68, 0))
+    const cornerNodeGeo = new THREE.SphereGeometry(0.038, 12, 12)
+    const bracketGeo = new THREE.BoxGeometry(0.10, 0.07, 0.12)
 
-    // Two Aerospace Rings (Ring 1: radius 2.35, Ring 2: radius 2.85)
-    const ring1Geo = new THREE.TorusGeometry(2.35, 0.024, 16, 96)
-    const ring2Geo = new THREE.TorusGeometry(2.85, 0.02, 16, 96)
-    const satGeo = new THREE.SphereGeometry(0.07, 12, 12)
+    // Two Aerospace Rings (Ring 1: radius 2.05, Ring 2: radius 2.42)
+    const ring1Geo = new THREE.TorusGeometry(2.05, 0.022, 16, 96)
+    const ring2Geo = new THREE.TorusGeometry(2.42, 0.018, 16, 96)
+    const satGeo = new THREE.SphereGeometry(0.045, 12, 12)
 
     // Aerospace Caliber Tick Marks along Ring 1
     const tickPoints: number[] = []
     const tickCount = 36
-    const r1 = 2.35
+    const r1 = 2.05
     for (let i = 0; i < tickCount; i++) {
       const angle = (i / tickCount) * Math.PI * 2
-      const inner = r1 - 0.07
-      const outer = r1 + 0.07
+      const inner = r1 - 0.06
+      const outer = r1 + 0.06
       tickPoints.push(Math.cos(angle) * inner, Math.sin(angle) * inner, 0)
       tickPoints.push(Math.cos(angle) * outer, Math.sin(angle) * outer, 0)
     }
@@ -161,7 +173,7 @@ export function AICore({
     // Satellite Telemetry Connecting Laser Vectors from Ring 2 to Ring 1
     const beamPoints: number[] = []
     const satCount = 8
-    const r2 = 2.85
+    const r2 = 2.42
     for (let i = 0; i < satCount; i++) {
       const angle = (i / satCount) * Math.PI * 2
       beamPoints.push(Math.cos(angle) * r2, Math.sin(angle) * r2, 0)
@@ -171,7 +183,8 @@ export function AICore({
     beamsGeo.setAttribute('position', new THREE.Float32BufferAttribute(beamPoints, 3))
 
     // Inner Crystalline & Nucleus
-    const crystalGeo = new THREE.OctahedronGeometry(0.95, 0)
+    const crystalGeo = new THREE.OctahedronGeometry(0.98, 0)
+    const crystalEdges = new THREE.EdgesGeometry(crystalGeo)
     const nucleusGeo = new THREE.OctahedronGeometry(0.48, 0)
 
     return {
@@ -186,6 +199,7 @@ export function AICore({
       ticksGeo,
       beamsGeo,
       crystalGeo,
+      crystalEdges,
       nucleusGeo,
     }
   }, [])
@@ -213,7 +227,7 @@ export function AICore({
   const satellitePositions = useMemo(() => {
     const count = 8
     const points: [number, number, number][] = []
-    const r = 2.85
+    const r = 2.42
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2
       points.push([Math.cos(angle) * r, Math.sin(angle) * r, 0])
@@ -337,10 +351,14 @@ export function AICore({
       satellitesGroupRef.current.rotation.z += delta * (0.26 + prox * 0.2) * contactDamping
     }
 
-    // 4. Inner Crystalline Octahedron: Counter-rotation
+    // 4. Inner Crystalline Octahedron & Luminous Edges: Counter-rotation
     if (crystalCoreRef.current) {
       crystalCoreRef.current.rotation.y -= delta * 0.28 * contactDamping
       crystalCoreRef.current.rotation.z += delta * 0.22 * contactDamping
+    }
+    if (crystalEdgesRef.current) {
+      crystalEdgesRef.current.rotation.y = crystalCoreRef.current?.rotation.y || 0
+      crystalEdgesRef.current.rotation.z = crystalCoreRef.current?.rotation.z || 0
     }
 
     // 5. Quantum Emissive Nucleus: Breathing & Proximity Brightening
@@ -410,10 +428,10 @@ export function AICore({
       <group ref={ring1GroupRef}>
         <mesh geometry={geometries.ring1Geo} material={materials.ringMat} />
         <lineSegments geometry={geometries.ticksGeo} material={materials.tickMat} />
-        <mesh position={[2.35, 0, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
-        <mesh position={[-2.35, 0, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
-        <mesh position={[0, 2.35, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
-        <mesh position={[0, -2.35, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
+        <mesh position={[2.05, 0, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
+        <mesh position={[-2.05, 0, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
+        <mesh position={[0, 2.05, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
+        <mesh position={[0, -2.05, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
       </group>
 
       {/* Ring 2 (Angled roll with 8 satellites & telemetry laser vectors) */}
@@ -437,6 +455,11 @@ export function AICore({
         ref={crystalCoreRef}
         geometry={geometries.crystalGeo}
         material={materials.crystal}
+      />
+      <lineSegments
+        ref={crystalEdgesRef}
+        geometry={geometries.crystalEdges}
+        material={materials.crystalEdgesMat}
       />
 
       <mesh
