@@ -5,7 +5,7 @@ import { AICore } from './AICore'
 import { GroundPlane } from './GroundPlane'
 import { NeuralNetwork } from './NeuralNetwork'
 import type { TechNodeData } from './NeuralNetwork'
-import { ParticleField } from './ParticleField'
+import { AtmosphericEnvironment } from './AtmosphericEnvironment'
 import { DataStreams } from './DataStreams'
 import { SceneController } from './SceneController'
 
@@ -37,6 +37,7 @@ export function PortfolioScene({
   const [scrollProgress, setScrollProgress] = useState<number>(0)
   const [hasWebGL] = useState<boolean>(() => checkWebGLSupport())
   const [isLoaded, setIsLoaded] = useState<boolean>(false)
+  const [isCanvasHovered, setIsCanvasHovered] = useState<boolean>(false)
   const [coreTransform, setCoreTransform] = useState<{
     position: [number, number, number]
     scale: number
@@ -48,14 +49,13 @@ export function PortfolioScene({
   const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
 
   useEffect(() => {
-    // Notify loaded after quick initialization
     const timer = setTimeout(() => setIsLoaded(true), 120)
     return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {
     let frameId = 0
-    // Exact sequence per Requirement 33
+    // Exact sequence per prompt: 01 Hero, 02 Work, 03 About, 04 Build Log, 05 Stack, 06 GitHub, 07 Contact
     const sections = [
       { id: 'top', name: 'hero' },
       { id: 'work', name: 'work' },
@@ -139,7 +139,12 @@ export function PortfolioScene({
         </div>
       )}
 
-      <div className="three-canvas-container" aria-hidden="true">
+      <div
+        className="three-canvas-container"
+        data-cursor-3d="true"
+        onMouseEnter={() => setIsCanvasHovered(true)}
+        onMouseLeave={() => setIsCanvasHovered(false)}
+      >
         <Canvas
           shadows
           gl={{
@@ -151,13 +156,13 @@ export function PortfolioScene({
         >
           <PerspectiveCamera makeDefault fov={45} position={[0, 0.4, 6.8]} />
 
-          {/* Ambient Tone */}
-          <ambientLight color="#0e110c" intensity={0.85} />
+          {/* Low Ambient Lighting for High-Contrast Studio Definition */}
+          <ambientLight color="#0a0d08" intensity={0.75} />
 
-          {/* Key Light casting soft directional shadows */}
+          {/* Key Light: High-angle directional light casting soft shadows */}
           <directionalLight
             position={[5, 8, 5]}
-            intensity={1.9}
+            intensity={1.85}
             color="#ffffff"
             castShadow
             shadow-mapSize-width={1024}
@@ -167,18 +172,26 @@ export function PortfolioScene({
             shadow-bias={-0.0001}
           />
 
-          {/* Specular Rim Light (Acid Lime) */}
+          {/* Specular Rim Light: Subtle acid-lime separation */}
           <directionalLight position={[-6, 4, -4]} intensity={1.5} color="#c7ff3d" />
 
-          {/* Soft Neutral Fill Light to lift shadowed facets on the left/lower flank */}
+          {/* Soft Fill Light: Neutral fill to lift dark shadow areas on the left flank */}
           <directionalLight position={[-4, -2, 4]} intensity={0.55} color="#e2e5dc" />
 
-          {/* Soft Distance Fog seamlessly blending into #080908 */}
+          {/* Atmospheric Distance Fog seamlessly blending into #080908 */}
           <fog attach="fog" args={['#080908', 8, 26]} />
 
           <Suspense fallback={null}>
-            {/* Ground Plane with Subtle Reflective Floor & Metric Rings */}
-            <GroundPlane position={[0, -3.2, 0]} />
+            {/* Ground Plane with Dynamic Shadow Tracking directly beneath the AI Core */}
+            <GroundPlane
+              position={[0, -3.2, 0]}
+              coreX={coreTransform.position[0]}
+              coreZ={coreTransform.position[2]}
+              coreScale={coreTransform.scale}
+            />
+
+            {/* 3-Tier Layered Atmospheric Depth Environment */}
+            <AtmosphericEnvironment activeSection={activeSection} mouseRef={mouseRef} />
 
             {/* Ambient Procedural Computational Data Streams */}
             <DataStreams
@@ -188,16 +201,17 @@ export function PortfolioScene({
               mouseRef={mouseRef}
             />
 
-            {/* Persistent AI Computational Sculpture */}
+            {/* Persistent Engineered AI Computational Sculpture */}
             <AICore
               position={coreTransform.position}
               scale={coreTransform.scale}
               activeSection={activeSection}
               activeProjectIndex={activeProjectIndex}
+              isHovered={isCanvasHovered}
               mouseRef={mouseRef}
             />
 
-            {/* Interactive 3D Neural Network for the STACK section */}
+            {/* Interactive 3D Neural Constellation for the STACK section */}
             <NeuralNetwork
               visible={activeSection === 'stack'}
               activeProjectIndex={activeProjectIndex}
@@ -205,17 +219,11 @@ export function PortfolioScene({
               mouseRef={mouseRef}
             />
 
-            {/* Atmospheric Micro-Particles */}
-            <ParticleField
-              visible={activeSection !== 'contact'}
-              activeSection={activeSection}
-              mouseRef={mouseRef}
-            />
-
-            {/* Cinematic Camera Journey Controller */}
+            {/* Cinematic Camera Journey Controller with Damped Motion */}
             <SceneController
               activeSection={activeSection}
               scrollProgress={scrollProgress}
+              isCoreHovered={isCanvasHovered}
               mouseRef={mouseRef}
               onCoreTransform={setCoreTransform}
             />

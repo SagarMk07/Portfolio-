@@ -12,6 +12,8 @@ interface ProjectRowProps {
   index: number
   reverse?: boolean
   onInView?: (index: number) => void
+  onHoverProject?: (project: Project) => void
+  onLeaveProject?: () => void
 }
 
 export function ProjectRow({
@@ -19,6 +21,8 @@ export function ProjectRow({
   index,
   reverse = false,
   onInView,
+  onHoverProject,
+  onLeaveProject,
 }: ProjectRowProps) {
   const reduceMotion = useReducedMotion()
 
@@ -31,7 +35,13 @@ export function ProjectRow({
       whileHover={reduceMotion ? undefined : { y: -4, transition: { duration: 0.28, ease: cinematicEase } }}
       viewport={{ once: false, amount: 0.25 }}
       onViewportEnter={() => onInView?.(index)}
-      onMouseEnter={() => onInView?.(index)}
+      onMouseEnter={() => {
+        onInView?.(index)
+        onHoverProject?.(project)
+      }}
+      onMouseLeave={() => {
+        onLeaveProject?.()
+      }}
     >
       <motion.div className="project-copy" variants={staggerVariants}>
         <motion.div className="project-meta" variants={revealItemVariants}>

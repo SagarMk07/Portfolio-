@@ -16,7 +16,7 @@ const categories: Category[] = [
   {
     id: 'ai-ml',
     number: '01',
-    label: 'AI / ML SYSTEMS',
+    label: 'AI / ML',
     telemetry: 'MODELS · VISION · REASONING ENGINES',
     description: 'Practical intelligence pipelines combining vision, multimodal APIs, and recommendation algorithms.',
     technologies: [
@@ -33,7 +33,7 @@ const categories: Category[] = [
   {
     id: 'fullstack',
     number: '02',
-    label: 'FULL STACK & WEB',
+    label: 'FULL STACK',
     telemetry: 'REACT · NODE · CLIENT EXTENSIONS',
     description: 'High-performance interactive interfaces, browser extensions, and modular backend endpoints.',
     technologies: [
@@ -41,9 +41,8 @@ const categories: Category[] = [
       'TypeScript',
       'JavaScript',
       'Node.js',
+      'FastAPI',
       'Tailwind CSS',
-      'HTML',
-      'CSS',
       'REST APIs',
       'Browser Extension',
     ],
@@ -51,7 +50,7 @@ const categories: Category[] = [
   {
     id: 'languages',
     number: '03',
-    label: 'CORE LANGUAGES',
+    label: 'LANGUAGES',
     telemetry: 'SYSTEMS · TYPING · SCRIPTING',
     description: 'Strong foundation across typed client frameworks, computational modeling, and systems.',
     technologies: [
@@ -66,10 +65,11 @@ const categories: Category[] = [
     id: 'cloud-data',
     number: '04',
     label: 'DATA & PLATFORMS',
-    telemetry: 'SUPABASE · FIREBASE · MAPS',
+    telemetry: 'SUPABASE · POSTGRES · FIREBASE',
     description: 'Managed data backends, document storage, authentication, and spatial coordinate integrations.',
     technologies: [
       'Supabase',
+      'PostgreSQL',
       'Firebase',
       'Firestore',
       'Google Maps',
@@ -79,12 +79,14 @@ const categories: Category[] = [
     id: 'tooling',
     number: '05',
     label: 'DEV WORKSPACE',
-    telemetry: 'GIT · WORKFLOW · PIPELINES',
+    telemetry: 'GIT · VITE · WORKFLOWS',
     description: 'Reproducible development workflows, versioning rigor, and automated development environments.',
     technologies: [
       'Git',
       'GitHub',
       'VS Code',
+      'Vite',
+      'Linux / Bash',
     ],
   },
 ]
@@ -157,6 +159,7 @@ export function InteractiveStack() {
                 className="matrix-tech-card"
                 initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
+                whileHover={reduceMotion ? undefined : { y: -3, transition: { duration: 0.2 } }}
                 transition={{ duration: 0.22, delay: idx * 0.03, ease: cinematicEase }}
               >
                 <div className="tech-card-header">

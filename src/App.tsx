@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowDown, ArrowUpRight, MoveUpRight, Sparkles } from 'lucide-react'
+import { ArrowDown, ArrowUpRight, Copy, Check, MoveUpRight, Sparkles } from 'lucide-react'
 import { motion, useReducedMotion, useScroll, useSpring } from 'framer-motion'
 import { Route, Routes, useLocation } from 'react-router-dom'
-import { projects } from './data/projects'
+import { projects, type Project } from './data/projects'
 import { Navigation } from './components/Navigation'
 import { CustomCursor } from './components/CustomCursor'
 import { PortfolioScene } from './components/three/PortfolioScene'
@@ -10,6 +10,7 @@ import type { TechNodeData } from './components/three/NeuralNetwork'
 import { InteractiveStack } from './components/InteractiveStack'
 import { SectionHeading } from './components/SectionHeading'
 import { ProjectRow } from './components/ProjectRow'
+import { ProjectHoverPreview } from './components/ProjectHoverPreview'
 import { CurrentlyBuilding } from './components/CurrentlyBuilding'
 import { GitHubActivity } from './components/GitHubActivity'
 import { ProjectDetail } from './components/ProjectDetail'
@@ -26,14 +27,15 @@ import {
 
 const linkedin = 'https://www.linkedin.com/in/sagar-kalagudi-b375163a2/'
 const github = 'https://github.com/SagarMk07'
+const email = 'sagarkalagudi7@gmail.com'
 
-// Hero Typography Entrance: SAGAR reveals first, KALAGUDI reveals second via clip-path
+// Hero Typography Entrance with heavy cinematic easing cubic-bezier(0.16, 1, 0.3, 1)
 const heroTitleVariants = {
   hidden: {},
   show: {
     transition: {
-      delayChildren: 0.12,
-      staggerChildren: 0.16,
+      delayChildren: 0.1,
+      staggerChildren: 0.15,
     },
   },
 }
@@ -42,14 +44,14 @@ const heroWordVariants = {
   hidden: {
     clipPath: 'inset(100% 0 0 0)',
     y: '105%',
-    opacity: 0.35,
+    opacity: 0.3,
   },
   show: {
     clipPath: 'inset(0% 0 0 0)',
     y: '0%',
     opacity: 1,
     transition: {
-      duration: 0.88,
+      duration: 0.92,
       ease: cinematicEase,
     },
   },
@@ -62,6 +64,31 @@ const heroBottomVariants = {
 
 function Hero({ onOpenResume }: { onOpenResume: () => void }) {
   const reduceMotion = useReducedMotion()
+  const [pointerOffset, setPointerOffset] = useState({ x: 0, y: 0 })
+
+  useEffect(() => {
+    if (reduceMotion) return
+    let frameId = 0
+    const onMouseMove = (e: MouseEvent) => {
+      if (!frameId) {
+        frameId = requestAnimationFrame(() => {
+          frameId = 0
+          // Controlled subtle pointer parallax displacement (max X = ±8px, max Y = ±5px)
+          const normX = (e.clientX / window.innerWidth - 0.5) * 16
+          const normY = (e.clientY / window.innerHeight - 0.5) * 10
+          setPointerOffset({
+            x: Math.max(-8, Math.min(8, normX)),
+            y: Math.max(-5, Math.min(5, normY)),
+          })
+        })
+      }
+    }
+    window.addEventListener('mousemove', onMouseMove, { passive: true })
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      if (frameId) cancelAnimationFrame(frameId)
+    }
+  }, [reduceMotion])
 
   return (
     <section className="hero" id="top" data-cursor-theme="dark">
@@ -80,8 +107,18 @@ function Hero({ onOpenResume }: { onOpenResume: () => void }) {
 
       {/* Art-Directed Poster Grid: Left Name, Center 3D Space, Right Intro */}
       <div className="hero-poster-grid">
-        {/* LEFT: Large Personal Typography */}
-        <div className="hero-poster-left">
+        {/* LEFT: Large Personal Typography with controlled parallax displacement */}
+        <div
+          className="hero-poster-left"
+          style={
+            reduceMotion
+              ? undefined
+              : {
+                  transform: `translate3d(${pointerOffset.x}px, ${pointerOffset.y}px, 0)`,
+                  transition: 'transform 240ms cubic-bezier(0.16, 1, 0.3, 1)',
+                }
+          }
+        >
           <motion.h1
             className="hero-title"
             variants={heroTitleVariants}
@@ -185,6 +222,8 @@ function Hero({ onOpenResume }: { onOpenResume: () => void }) {
 }
 
 function Work({ onActiveProject }: { onActiveProject: (index: number) => void }) {
+  const [hoveredProject, setHoveredProject] = useState<Project | null>(null)
+
   return (
     <section className="work-section page-section" id="work" data-cursor-theme="dark">
       <SectionHeading
@@ -197,6 +236,7 @@ function Work({ onActiveProject }: { onActiveProject: (index: number) => void })
           sustainability. Each engineered to eliminate friction in real-world workflows.
         </p>
       </SectionHeading>
+
       <div className="project-list">
         {projects
           .filter(project => project.featured)
@@ -207,9 +247,14 @@ function Work({ onActiveProject }: { onActiveProject: (index: number) => void })
               index={index}
               reverse={index % 2 === 1}
               onInView={onActiveProject}
+              onHoverProject={setHoveredProject}
+              onLeaveProject={() => setHoveredProject(null)}
             />
           ))}
       </div>
+
+      {/* Floating Cursor Project Preview (Desktop only) */}
+      <ProjectHoverPreview project={hoveredProject} visible={Boolean(hoveredProject)} />
 
       {/* Subsection: Currently Building */}
       <CurrentlyBuilding />
@@ -221,32 +266,83 @@ function About() {
   return (
     <section className="about-section page-section" id="about" data-cursor-theme="dark">
       <SectionHeading index="03" eyebrow="CORE PHILOSOPHY" title="BUILDING WITH|INTENT." />
-      <div className="about-content">
-        <LineReveal
-          as="h3"
-          className="about-statement"
-          lines={['I BUILD', 'INTELLIGENT', <em>SYSTEMS.</em>]}
-          amount={0.25}
-        />
-        <ScrollReveal className="about-copy">
-          <p className="about-lead">
-            I’m Sagar Kalagudi — an AI &amp; ML developer working across computational models and
-            the interfaces that make them genuinely useful.
-          </p>
-          <p>
-            Currently pursuing a B.E. in Artificial Intelligence &amp; Machine Learning, I engineer
-            hands-on systems that bridge models, real-time data, and resilient web software.
-            I’m invested in the entire path: from problem framing and vector embeddings to
-            the interface a person actually touches.
-          </p>
-          <div className="about-location">
-            <span>
-              <i /> BANGALORE, INDIA
-            </span>
-            <span>STUDENT / BUILDER</span>
+      
+      {/* Editorial Spatial Layout: Left Statement & Telemetry, Right Narrative & Capabilities */}
+      <div className="about-editorial-grid">
+        {/* Left Column: Bold Statement & Telemetry Block */}
+        <div className="about-editorial-left">
+          <LineReveal
+            as="h3"
+            className="about-statement"
+            lines={['I BUILD', 'INTELLIGENT', <em>SYSTEMS.</em>]}
+            amount={0.25}
+          />
+          <div className="about-telemetry-panel">
+            <div className="telemetry-row">
+              <span className="telemetry-label">LOCATION</span>
+              <strong className="telemetry-val">BANGALORE / INDIA</strong>
+              <small className="telemetry-sub">12°58′N · 77°35′E</small>
+            </div>
+            <div className="telemetry-row">
+              <span className="telemetry-label">FOCUS</span>
+              <strong className="telemetry-val">AI / ML ARCHITECTURES</strong>
+              <small className="telemetry-sub">MODELS · DATA PIPELINES</small>
+            </div>
+            <div className="telemetry-row">
+              <span className="telemetry-label">STACK</span>
+              <strong className="telemetry-val">REACT · PYTHON · TYPESCRIPT</strong>
+              <small className="telemetry-sub">FASTAPI · SUPABASE · THREE.JS</small>
+            </div>
+            <div className="telemetry-row">
+              <span className="telemetry-label">STATUS</span>
+              <strong className="telemetry-val telemetry-active">AVAILABLE FOR IMPACT</strong>
+              <small className="telemetry-sub">INTERNSHIPS &amp; COLLABORATIONS</small>
+            </div>
           </div>
-        </ScrollReveal>
+        </div>
+
+        {/* Right Column: Developer Narrative & Interactive Capabilities */}
+        <div className="about-editorial-right">
+          <ScrollReveal className="about-copy">
+            <p className="about-lead">
+              I’m Sagar Kalagudi — an AI &amp; ML developer working across computational models and
+              the interfaces that make them genuinely useful.
+            </p>
+            <p>
+              Currently pursuing a B.E. in Artificial Intelligence &amp; Machine Learning, I engineer
+              hands-on systems that bridge models, real-time data, and resilient web software.
+              I’m invested in the entire path: from problem framing and vector embeddings to
+              the interface a person actually touches.
+            </p>
+          </ScrollReveal>
+
+          {/* Technical Capability Modules */}
+          <div className="about-capabilities-list">
+            <div className="capability-card">
+              <div className="capability-num">01</div>
+              <div className="capability-info">
+                <strong>INTELLIGENT MODEL PIPELINES</strong>
+                <p>Computer vision, document understanding OCR, and generative reasoning workflows.</p>
+              </div>
+            </div>
+            <div className="capability-card">
+              <div className="capability-num">02</div>
+              <div className="capability-info">
+                <strong>FULL STACK SYSTEMS</strong>
+                <p>High-throughput backend endpoints, PostgreSQL persistence, and asynchronous processing.</p>
+              </div>
+            </div>
+            <div className="capability-card">
+              <div className="capability-num">03</div>
+              <div className="capability-info">
+                <strong>REACTIVE USER INTERFACES</strong>
+                <p>Pixel-precise interactive web experiences with WebGL, Three.js, and strict type safety.</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+
       <ScrollReveal className="about-rule">
         <span>AI ARCHITECTURES</span>
         <i />
@@ -266,11 +362,35 @@ function BuildLog() {
   })
   const scaleY = useSpring(scrollYProgress, { stiffness: 100, damping: 25, restDelta: 0.001 })
 
+  const milestones = [
+    {
+      year: '2024',
+      phase: 'AI / ML FOUNDATION',
+      status: '[VERIFIED]',
+      tech: 'Python · Scikit-Learn · Computer Vision · OCR',
+      description: 'Explored deep learning foundations, statistical modeling, and real-time visual parsing systems.',
+    },
+    {
+      year: '2025',
+      phase: 'FULL STACK SYSTEMS',
+      status: '[DEPLOYED]',
+      tech: 'TypeScript · React · FastAPI · Supabase · Cloud',
+      description: 'Engineered end-to-end applications bridging machine learning models to reactive client interfaces.',
+    },
+    {
+      year: '2026',
+      phase: 'INTELLIGENT PRODUCTS',
+      status: '[ACTIVE]',
+      tech: 'Generative AI · Three.js · Spatial Interaction',
+      description: 'Developing autonomous agents, real-time spatial web experiences, and production ML tools.',
+    },
+  ]
+
   return (
     <section className="journey-section page-section" id="build-log" data-cursor-theme="dark">
       <SectionHeading
         index="04"
-        eyebrow="BUILD LOG / EVOLUTION"
+        eyebrow="SYS_EXEC // 2024—2026"
         title="BUILT BY FOLLOWING|THE QUESTION."
       />
       <div ref={containerRef} className="journey-list-wrapper">
@@ -278,13 +398,21 @@ function BuildLog() {
           <motion.div className="journey-timeline-fill" style={{ scaleY }} />
         </div>
         <ScrollReveal className="journey-list" stagger amount={0.15}>
-          {projects.map(project => (
-            <motion.div className="journey-row" key={project.id} variants={revealItemVariants}>
-              <span className="journey-index">{project.number}</span>
+          {milestones.map((m) => (
+            <motion.div className="journey-row" key={m.year} variants={revealItemVariants}>
+              <span className="journey-index">{m.year}</span>
               <div className="journey-main">
-                <span className="journey-meta">{project.category}</span>
-                <h3>{project.title}</h3>
-                <p>{project.shortDescription}</p>
+                <div className="journey-milestone-top">
+                  <span className="journey-meta">{m.phase}</span>
+                  <span className="milestone-status-tag">{m.status}</span>
+                </div>
+                <h3>{m.phase}</h3>
+                <p>{m.description}</p>
+                <div className="milestone-tech-pills">
+                  {m.tech.split(' · ').map(t => (
+                    <span key={t} className="milestone-pill">{t}</span>
+                  ))}
+                </div>
               </div>
               <span className="journey-marker">
                 <i />
@@ -330,6 +458,14 @@ function Stack({ hoveredNode }: { hoveredNode: TechNodeData | null }) {
 }
 
 function Contact() {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(email)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2400)
+  }
+
   return (
     <div className="contact-wrapper">
       {/* Seamless transition zone from dark 3D environment to acid lime */}
@@ -356,18 +492,29 @@ function Contact() {
             <span className="avail-dot" />
             <span>AVAILABLE FOR INTERNSHIPS &amp; COLLABORATIONS</span>
           </div>
-          <motion.a
-            href={linkedin}
-            className="contact-cta"
-            target="_blank"
-            rel="noreferrer"
-            variants={revealItemVariants}
-          >
-            <span>START A CONVERSATION</span>
-            <i>
-              <MoveUpRight size={19} />
-            </i>
-          </motion.a>
+          
+          <div className="contact-action-row">
+            <motion.a
+              href={`mailto:${email}`}
+              className="contact-cta"
+              variants={revealItemVariants}
+            >
+              <span>START A CONVERSATION</span>
+              <i>
+                <MoveUpRight size={19} />
+              </i>
+            </motion.a>
+
+            <button
+              type="button"
+              className="contact-email-copy-btn"
+              onClick={handleCopyEmail}
+              title="Copy email to clipboard"
+            >
+              {copied ? <Check size={16} /> : <Copy size={16} />}
+              <span>{copied ? 'EMAIL COPIED' : email}</span>
+            </button>
+          </div>
         </ScrollReveal>
 
         <ScrollReveal className="contact-socials">
@@ -378,7 +525,9 @@ function Contact() {
           <a href={github} target="_blank" rel="noreferrer">
             GITHUB <ArrowUpRight size={14} />
           </a>
-          <span>EMAIL / NOT LISTED</span>
+          <a href={`mailto:${email}`}>
+            EMAIL ↗
+          </a>
         </ScrollReveal>
       </section>
     </div>

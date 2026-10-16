@@ -1,7 +1,22 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
+import { useFrame } from '@react-three/fiber'
 
-export function GroundPlane({ position = [0, -3.2, 0] }: { position?: [number, number, number] }) {
+interface GroundPlaneProps {
+  position?: [number, number, number]
+  coreX?: number
+  coreZ?: number
+  coreScale?: number
+}
+
+export function GroundPlane({
+  position = [0, -3.2, 0],
+  coreX = 1.15,
+  coreZ = 0,
+  coreScale = 1.25,
+}: GroundPlaneProps) {
+  const shadowMeshRef = useRef<THREE.Mesh>(null)
+
   // Soft radial contact shadow texture generated procedurally
   const shadowTexture = useMemo(() => {
     if (typeof document === 'undefined') return null
@@ -11,9 +26,9 @@ export function GroundPlane({ position = [0, -3.2, 0] }: { position?: [number, n
     const ctx = canvas.getContext('2d')
     if (ctx) {
       const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128)
-      gradient.addColorStop(0, 'rgba(0, 0, 0, 0.85)')
-      gradient.addColorStop(0.35, 'rgba(0, 0, 0, 0.52)')
-      gradient.addColorStop(0.68, 'rgba(0, 0, 0, 0.18)')
+      gradient.addColorStop(0, 'rgba(0, 0, 0, 0.90)')
+      gradient.addColorStop(0.35, 'rgba(0, 0, 0, 0.55)')
+      gradient.addColorStop(0.68, 'rgba(0, 0, 0, 0.20)')
       gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
       ctx.fillStyle = gradient
       ctx.fillRect(0, 0, 256, 256)
@@ -87,6 +102,28 @@ export function GroundPlane({ position = [0, -3.2, 0] }: { position?: [number, n
     return { gridGeometry: gridGeo, ringGeometries: rings }
   }, [])
 
+  // Smoothly lerp contact shadow position and scale to match core sculpture coordinates
+  useFrame(() => {
+    if (shadowMeshRef.current && materials.contactShadow) {
+      shadowMeshRef.current.position.x = THREE.MathUtils.lerp(
+        shadowMeshRef.current.position.x,
+        coreX,
+        0.06
+      )
+      shadowMeshRef.current.position.y = 0.012
+      shadowMeshRef.current.position.z = THREE.MathUtils.lerp(
+        shadowMeshRef.current.position.z,
+        coreZ,
+        0.06
+      )
+      const targetScale = Math.max(0.0001, coreScale * 0.95)
+      shadowMeshRef.current.scale.setScalar(
+        THREE.MathUtils.lerp(shadowMeshRef.current.scale.x, targetScale, 0.06)
+      )
+      materials.contactShadow.opacity = Math.min(0.85, Math.max(0.02, coreScale * 0.65))
+    }
+  })
+
   return (
     <group position={position}>
       {/* Physical Floor Mesh with Soft Shadow Reception */}
@@ -94,10 +131,15 @@ export function GroundPlane({ position = [0, -3.2, 0] }: { position?: [number, n
         <planeGeometry args={[90, 90]} />
       </mesh>
 
-      {/* Realistic Soft Contact Shadow directly beneath the core sculpture */}
+      {/* Realistic Soft Contact Shadow dynamically tracking beneath the core sculpture */}
       {materials.contactShadow && (
-        <mesh position={[1.15, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]} material={materials.contactShadow}>
-          <planeGeometry args={[8.5, 8.5]} />
+        <mesh
+          ref={shadowMeshRef}
+          position={[coreX, 0.012, coreZ]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          material={materials.contactShadow}
+        >
+          <planeGeometry args={[7.5, 7.5]} />
         </mesh>
       )}
 

@@ -1,20 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 
-function resolveSurface(x: number, y: number) {
-  for (const element of document.elementsFromPoint(x, y)) {
-    const themed = element.closest<HTMLElement>('[data-cursor-theme]')
-    if (themed?.dataset.cursorTheme === 'lime') return 'lime'
-    if (themed?.dataset.cursorTheme === 'dark') return 'dark'
-  }
-  return 'dark'
-}
+type CursorState = 'default' | 'interactive' | 'project' | 'core'
+type CursorTheme = 'dark' | 'lime'
 
 export function CustomCursor() {
   const [enabled, setEnabled] = useState(false)
-  const pointerRef = useRef({ x: -100, y: -100, hasPosition: false })
+  const pointerRef = useRef<{
+    x: number
+    y: number
+    hasPosition: boolean
+    theme: CursorTheme
+    state: CursorState
+  }>({
+    x: -100,
+    y: -100,
+    hasPosition: false,
+    theme: 'dark',
+    state: 'default',
+  })
 
+  // Detect desktop device with fine pointer and hover support
   useEffect(() => {
-    // Only enable on fine pointer desktop devices with hover support
     const finePointer = window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 1024px)')
     const touchPointer = window.matchMedia('(any-pointer: coarse)')
     const syncAvailability = () => setEnabled(finePointer.matches && !touchPointer.matches)
@@ -35,87 +41,118 @@ export function CustomCursor() {
     const cursor = document.querySelector<HTMLElement>('.custom-cursor')
     if (!cursor) return
 
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-    let frame = 0
+    let frameId = 0
+    let lastRenderedTheme: CursorTheme = 'dark'
+    let lastRenderedState: CursorState = 'default'
 
-    const renderPosition = () => {
-      frame = 0
-      const { x, y } = pointerRef.current
-      cursor.style.transform = `translate3d(${x}px, ${y}px, 0)`
-    }
-
-    const updateCursorState = () => {
+    // High-performance single RAF render loop
+    const render = () => {
+      frameId = 0
       const pointer = pointerRef.current
       if (!pointer.hasPosition) return
 
-      const elements = document.elementsFromPoint(pointer.x, pointer.y)
-      const theme = resolveSurface(pointer.x, pointer.y)
-      const isProject = elements.some(el => el.closest('.project-row, .project-art-link'))
-      const isInteractive = elements.some(el => el.closest('a, button, input, textarea, [tabindex="0"]'))
+      // Hardware accelerated translate3d directly to mouse tip with zero lag
+      cursor.style.transform = `translate3d(${pointer.x}px, ${pointer.y}px, 0)`
 
-      cursor.dataset.theme = theme
-      cursor.dataset.project = isProject ? 'true' : 'false'
-      cursor.dataset.interactive = isInteractive ? 'true' : 'false'
-      cursor.dataset.visible = 'true'
-
-      if (reducedMotion.matches) {
-        cursor.style.transform = `translate3d(${pointer.x}px, ${pointer.y}px, 0)`
-      } else if (!frame) {
-        frame = window.requestAnimationFrame(renderPosition)
+      if (lastRenderedTheme !== pointer.theme) {
+        cursor.dataset.theme = pointer.theme
+        lastRenderedTheme = pointer.theme
+      }
+      if (lastRenderedState !== pointer.state) {
+        cursor.dataset.state = pointer.state
+        lastRenderedState = pointer.state
       }
     }
 
+    const scheduleRender = () => {
+      if (!frameId) {
+        frameId = window.requestAnimationFrame(render)
+      }
+    }
+
+    // Zero-reflow O(1) event target inspection (NO document.elementsFromPoint)
     const onPointerMove = (event: PointerEvent) => {
       if (event.pointerType === 'touch') return
+
       pointerRef.current.x = event.clientX
       pointerRef.current.y = event.clientY
       pointerRef.current.hasPosition = true
-      updateCursorState()
+
+      const target = event.target as HTMLElement | null
+      if (target) {
+        // Surface detection via data-cursor-theme
+        const themed = target.closest<HTMLElement>('[data-cursor-theme]')
+        if (themed?.dataset.cursorTheme === 'lime') {
+          pointerRef.current.theme = 'lime'
+        } else {
+          pointerRef.current.theme = 'dark'
+        }
+
+        // 4 precise interactive states
+        if (target.closest('[data-cursor-3d="true"]')) {
+          pointerRef.current.state = 'core'
+        } else if (target.closest('.project-row, .project-stage, .project-art-link, .project-preview-card')) {
+          pointerRef.current.state = 'project'
+        } else if (target.closest('a, button, input, textarea, [tabindex="0"], [role="button"], [role="tab"]')) {
+          pointerRef.current.state = 'interactive'
+        } else {
+          pointerRef.current.state = 'default'
+        }
+      }
+
+      cursor.dataset.visible = 'true'
+      scheduleRender()
     }
 
-    const onScroll = () => {
-      if (pointerRef.current.hasPosition) {
-        updateCursorState()
-      }
-    }
+    // IntersectionObserver on surface themes to maintain theme during scroll without mouse movement
+    const themeSections = document.querySelectorAll<HTMLElement>('[data-cursor-theme]')
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const theme = (entry.target as HTMLElement).dataset.cursorTheme as CursorTheme
+            if (theme) {
+              pointerRef.current.theme = theme
+              scheduleRender()
+            }
+          }
+        }
+      },
+      { threshold: 0.25 }
+    )
+
+    themeSections.forEach((el) => observer.observe(el))
 
     const hide = (clearPosition = true) => {
       cursor.dataset.visible = 'false'
-      cursor.dataset.project = 'false'
-      cursor.dataset.interactive = 'false'
       if (clearPosition) pointerRef.current.hasPosition = false
     }
 
-    const onWindowBlur = () => hide(false)
     const onPointerOut = (event: PointerEvent) => {
       if (!event.relatedTarget) hide()
     }
+    const onWindowBlur = () => hide(false)
     const onVisibilityChange = () => {
       if (document.visibilityState !== 'visible') hide(false)
-      else updateCursorState()
     }
 
     root.classList.add('has-custom-cursor')
     cursor.dataset.visible = 'false'
     cursor.dataset.theme = 'dark'
-    cursor.dataset.project = 'false'
-    cursor.dataset.interactive = 'false'
+    cursor.dataset.state = 'default'
 
     window.addEventListener('pointermove', onPointerMove, { passive: true })
-    window.addEventListener('scroll', onScroll, { passive: true })
     document.addEventListener('pointerout', onPointerOut)
     window.addEventListener('blur', onWindowBlur)
-    window.addEventListener('focus', updateCursorState)
     document.addEventListener('visibilitychange', onVisibilityChange)
 
     return () => {
-      if (frame) window.cancelAnimationFrame(frame)
+      if (frameId) window.cancelAnimationFrame(frameId)
       window.removeEventListener('pointermove', onPointerMove)
-      window.removeEventListener('scroll', onScroll)
       document.removeEventListener('pointerout', onPointerOut)
       window.removeEventListener('blur', onWindowBlur)
-      window.removeEventListener('focus', updateCursorState)
       document.removeEventListener('visibilitychange', onVisibilityChange)
+      observer.disconnect()
       root.classList.remove('has-custom-cursor')
     }
   }, [enabled])
@@ -127,11 +164,11 @@ export function CustomCursor() {
       className="custom-cursor"
       aria-hidden="true"
       data-theme="dark"
-      data-project="false"
-      data-interactive="false"
+      data-state="default"
       data-visible="false"
     >
       <span className="custom-cursor__dot" />
+      <span className="custom-cursor__ring" />
     </div>
   )
 }
