@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, memo } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 
@@ -7,7 +7,7 @@ interface AtmosphericEnvironmentProps {
   mouseRef: React.MutableRefObject<{ x: number; y: number }>
 }
 
-export function AtmosphericEnvironment({
+function AtmosphericEnvironmentComponent({
   activeSection = 'hero',
   mouseRef,
 }: AtmosphericEnvironmentProps) {
@@ -125,32 +125,36 @@ export function AtmosphericEnvironment({
     const time = state.clock.getElapsedTime()
     const isContact = activeSection === 'contact'
     const speedMult = isContact ? 0.08 : 1.0
+    const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    const mouseX = reduceMotion ? 0 : mouse.x
+    const mouseY = reduceMotion ? 0 : mouse.y
 
     // 1. Background Grid (slowest parallax: 0.05x)
     if (bgGridRef.current) {
       bgGridRef.current.position.x = THREE.MathUtils.lerp(
         bgGridRef.current.position.x,
-        mouse.x * 0.08,
+        mouseX * 0.08,
         0.03
       )
       bgGridRef.current.position.y = THREE.MathUtils.lerp(
         bgGridRef.current.position.y,
-        -0.8 - mouse.y * 0.05,
+        -0.8 - mouseY * 0.05,
         0.03
       )
     }
 
     // 2. Midground Dust (moderate drift: 0.35x)
     if (midPointsRef.current) {
-      midPointsRef.current.rotation.y += delta * 0.018 * speedMult
+      midPointsRef.current.rotation.y += reduceMotion ? 0 : delta * 0.018 * speedMult
       midPointsRef.current.position.x = THREE.MathUtils.lerp(
         midPointsRef.current.position.x,
-        mouse.x * 0.32,
+        mouseX * 0.32,
         0.04
       )
       midPointsRef.current.position.y = THREE.MathUtils.lerp(
         midPointsRef.current.position.y,
-        -mouse.y * 0.22,
+        -mouseY * 0.22,
         0.04
       )
     }
@@ -159,30 +163,30 @@ export function AtmosphericEnvironment({
     if (fgPointsRef.current) {
       fgPointsRef.current.position.x = THREE.MathUtils.lerp(
         fgPointsRef.current.position.x,
-        mouse.x * 0.85,
+        mouseX * 0.85,
         0.05
       )
       fgPointsRef.current.position.y = THREE.MathUtils.lerp(
         fgPointsRef.current.position.y,
-        -mouse.y * 0.55,
+        -mouseY * 0.55,
         0.05
       )
-      fgPointsRef.current.rotation.z += delta * 0.012 * speedMult
+      fgPointsRef.current.rotation.z += reduceMotion ? 0 : delta * 0.012 * speedMult
     }
 
     // 4. Optical Trace Streaks
     if (streakRef.current) {
       streakRef.current.position.x = THREE.MathUtils.lerp(
         streakRef.current.position.x,
-        mouse.x * 0.9 + Math.sin(time * 0.4) * 0.15,
+        mouseX * 0.9 + (reduceMotion ? 0 : Math.sin(time * 0.4) * 0.15),
         0.05
       )
       streakRef.current.position.y = THREE.MathUtils.lerp(
         streakRef.current.position.y,
-        -mouse.y * 0.6,
+        -mouseY * 0.6,
         0.05
       )
-      streakMaterial.opacity = (0.16 + Math.sin(time * 1.8) * 0.08) * speedMult
+      streakMaterial.opacity = (0.16 + (reduceMotion ? 0 : Math.sin(time * 1.8) * 0.08)) * speedMult
     }
 
     // Opacity fade in contact section
@@ -215,3 +219,5 @@ export function AtmosphericEnvironment({
     </group>
   )
 }
+
+export const AtmosphericEnvironment = memo(AtmosphericEnvironmentComponent)

@@ -3235,14 +3235,18 @@ html.has-custom-cursor * {
   letter-spacing: 0.12em;
   pointer-events: none;
   border-radius: 2px;
-  animation: fadeOut 350ms forwards 500ms;
+  transition: opacity 180ms ease;
 }
 
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
+.status-dot.is-initializing {
+  background: #ffcc00;
+  box-shadow: 0 0 6px rgba(255, 204, 0, 0.6);
+  animation: pulseInit 1s infinite alternate;
+}
+
+@keyframes pulseInit {
+  from { opacity: 0.35; }
+  to { opacity: 1; }
 }
 
 .three-fallback-surface {
@@ -3257,9 +3261,10 @@ html.has-custom-cursor * {
   position: absolute;
   inset: 0;
   opacity: 0.25;
-  background-image: linear-gradient(rgba(199, 255, 61, 0.08) 1px, transparent 1px),
+  background-image: radial-gradient(circle at 65% 50%, rgba(199, 255, 61, 0.06) 0%, transparent 60%),
+                    linear-gradient(rgba(199, 255, 61, 0.08) 1px, transparent 1px),
                     linear-gradient(90deg, rgba(199, 255, 61, 0.08) 1px, transparent 1px);
-  background-size: 60px 60px;
+  background-size: 100% 100%, 60px 60px, 60px 60px;
 }
 
 /* Contact Availability Banner */

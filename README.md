@@ -57,8 +57,8 @@ These are the technologies represented in the portfolio's stack section and proj
 | Languages | Python, C++, TypeScript, Kotlin, JavaScript |
 | Frontend | React, HTML, CSS, Tailwind CSS |
 | Backend | Node.js, REST APIs |
-| AI / ML | Machine Learning, Computer Vision, Generative AI, AI APIs |
-| Database / Cloud | Supabase, Firebase, Firestore |
+| AI / ML | Machine Learning, Generative AI, AI APIs, Data Analysis |
+| Database / Cloud | Supabase, Firebase, Google Maps |
 | Tools | Git, GitHub, VS Code |
 
 ## Portfolio features

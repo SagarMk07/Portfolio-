@@ -4,25 +4,26 @@ import { useFrame, useThree } from '@react-three/fiber'
 
 interface SceneControllerProps {
   activeSection: string
-  scrollProgress: number
+  scrollProgressRef: React.MutableRefObject<number>
   isCoreHovered?: boolean
   mouseRef: React.MutableRefObject<{ x: number; y: number }>
-  onCoreTransform: (transform: { position: [number, number, number]; scale: number }) => void
+  coreTransformRef: React.MutableRefObject<{ position: [number, number, number]; scale: number }>
 }
 
 export function SceneController({
   activeSection,
-  scrollProgress,
+  scrollProgressRef,
   isCoreHovered = false,
   mouseRef,
-  onCoreTransform,
+  coreTransformRef,
 }: SceneControllerProps) {
   const { camera } = useThree()
   const targetCamPos = useRef(new THREE.Vector3(0, 0.4, 6.8))
   const targetLookAt = useRef(new THREE.Vector3(0.35, 0.05, 0))
   const currentLookAt = useRef(new THREE.Vector3(0.35, 0.05, 0))
-  const lastScrollProgress = useRef(scrollProgress)
+  const lastScrollProgress = useRef(scrollProgressRef.current)
   const scrollVelocity = useRef(0)
+  const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   useFrame((_, delta) => {
     const mouse = mouseRef.current
@@ -36,7 +37,7 @@ export function SceneController({
     const isMobile = w < 768             // 390x844, 430x932
 
     // Track scroll velocity for subtle dynamic inertia
-    const currentProgress = scrollProgress
+    const currentProgress = scrollProgressRef.current
     const rawVelocity = (currentProgress - lastScrollProgress.current) / Math.max(delta, 0.001)
     lastScrollProgress.current = currentProgress
     scrollVelocity.current = THREE.MathUtils.lerp(scrollVelocity.current, rawVelocity, 0.08)
@@ -171,18 +172,18 @@ export function SceneController({
     }
 
     // Scroll depth progression and velocity nudge (subtle, non-linear)
-    const scrollDepth = (scrollProgress - 0.5) * 0.30 + scrollVelocity.current * 0.06
+    const scrollDepth = reduceMotion ? 0 : (currentProgress - 0.5) * 0.30 + scrollVelocity.current * 0.06
     camZ += scrollDepth
 
-    // Pass computed object transform to parent
-    onCoreTransform({
-      position: [coreX, coreY, coreZ],
-      scale: coreScale,
-    })
+    // Mutate shared ref directly without triggering React re-renders
+    coreTransformRef.current.position[0] = coreX
+    coreTransformRef.current.position[1] = coreY
+    coreTransformRef.current.position[2] = coreZ
+    coreTransformRef.current.scale = coreScale
 
     // Subconscious mouse parallax with strict bounding (max X = ±0.08, max Y = ±0.05 on desktop)
-    const clampedMouseX = Math.max(-1, Math.min(1, mouse.x)) * (isMobile ? 0.02 : 0.08)
-    const clampedMouseY = Math.max(-1, Math.min(1, mouse.y)) * (isMobile ? 0.015 : 0.05)
+    const clampedMouseX = reduceMotion ? 0 : Math.max(-1, Math.min(1, mouse.x)) * (isMobile ? 0.02 : 0.08)
+    const clampedMouseY = reduceMotion ? 0 : Math.max(-1, Math.min(1, mouse.y)) * (isMobile ? 0.015 : 0.05)
 
     targetCamPos.current.set(
       camX + clampedMouseX,

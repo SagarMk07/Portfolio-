@@ -26,7 +26,7 @@ export function ProjectHoverPreview({ project, visible }: ProjectHoverPreviewPro
   }, [])
 
   useEffect(() => {
-    if (!isSupported) return
+    if (!isSupported || !visible) return
 
     let frameId = 0
     const onMouseMove = (e: MouseEvent) => {
@@ -54,7 +54,7 @@ export function ProjectHoverPreview({ project, visible }: ProjectHoverPreviewPro
       window.removeEventListener('mousemove', onMouseMove)
       if (frameId) cancelAnimationFrame(frameId)
     }
-  }, [isSupported])
+  }, [isSupported, visible])
 
   if (!isSupported || reduceMotion) return null
 

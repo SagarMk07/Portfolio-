@@ -1,4 +1,4 @@
-import { useRef, useMemo, useState } from 'react'
+import { useRef, useMemo, useState, memo } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
@@ -189,12 +189,14 @@ interface NeuralNetworkProps {
   mouseRef: React.MutableRefObject<{ x: number; y: number }>
 }
 
-export function NeuralNetwork({
+function NeuralNetworkComponent({
   visible,
   activeProjectIndex = -1,
   onHoverNode,
   mouseRef,
 }: NeuralNetworkProps) {
+  if (!visible) return null
+
   const groupRef = useRef<THREE.Group>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
 
@@ -231,6 +233,35 @@ export function NeuralNetwork({
     return list
   }, [nodeMap])
 
+  // Precomputed reusable geometries for connection lines (created once, zero frame allocation)
+  const lineGeometries = useMemo(() => {
+    return lines.map((line) => {
+      const points = [new THREE.Vector3(...line.from), new THREE.Vector3(...line.to)]
+      return new THREE.BufferGeometry().setFromPoints(points)
+    })
+  }, [lines])
+
+  // Reusable line materials
+  const lineMaterials = useMemo(() => {
+    return {
+      normal: new THREE.LineBasicMaterial({
+        color: '#ffffff',
+        transparent: true,
+        opacity: 0.10,
+      }),
+      dimmed: new THREE.LineBasicMaterial({
+        color: '#ffffff',
+        transparent: true,
+        opacity: 0.03,
+      }),
+      highlighted: new THREE.LineBasicMaterial({
+        color: '#c7ff3d',
+        transparent: true,
+        opacity: 0.95,
+      }),
+    }
+  }, [])
+
   useFrame((state) => {
     if (!groupRef.current) return
     const time = state.clock.getElapsedTime()
@@ -247,43 +278,30 @@ export function NeuralNetwork({
       Math.cos(time * 0.22) * 0.05 - mouse.y * 0.18,
       0.05
     )
-
-    // Immediate visibility culling when not in stack section
-    if (!visible) {
-      groupRef.current.visible = false
-      return
-    }
-    groupRef.current.visible = true
-
-    // Visibility scale animation
-    const targetScale = visible ? 1 : 0.0001
-    groupRef.current.scale.setScalar(
-      THREE.MathUtils.lerp(groupRef.current.scale.x, targetScale, 0.08)
-    )
   })
 
   // Project 02 (SmartShopper Guardian): Highlights Frontend & Extension cluster
   const project2Cluster = useMemo(() => new Set(['frontend-core', 'typescript', 'react', 'rest-apis']), [])
 
   return (
-    <group ref={groupRef} position={[0, 0, -0.5]} visible={visible}>
+    <group ref={groupRef} position={[0, 0, -0.5]}>
       {/* 3D Laser Connection Lines */}
       {lines.map((line, idx) => {
         const isHoverPair = hoveredId === line.idA || hoveredId === line.idB
         const isProject2Pair = activeProjectIndex === 1 && (project2Cluster.has(line.idA) && project2Cluster.has(line.idB))
         const isHighlighted = isHoverPair || isProject2Pair
-
-        const points = [new THREE.Vector3(...line.from), new THREE.Vector3(...line.to)]
-        const lineGeo = new THREE.BufferGeometry().setFromPoints(points)
+        const mat = isHighlighted
+          ? lineMaterials.highlighted
+          : hoveredId
+            ? lineMaterials.dimmed
+            : lineMaterials.normal
 
         return (
-          <lineSegments key={idx} geometry={lineGeo}>
-            <lineBasicMaterial
-              color={isHighlighted ? '#c7ff3d' : '#ffffff'}
-              transparent
-              opacity={isHighlighted ? 0.95 : hoveredId ? 0.03 : 0.10}
-            />
-          </lineSegments>
+          <lineSegments
+            key={idx}
+            geometry={lineGeometries[idx]}
+            material={mat}
+          />
         )
       })}
 
@@ -359,3 +377,5 @@ export function NeuralNetwork({
     </group>
   )
 }
+
+export const NeuralNetwork = memo(NeuralNetworkComponent)

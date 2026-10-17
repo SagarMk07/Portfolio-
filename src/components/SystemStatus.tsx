@@ -3,10 +3,11 @@ import { motion, useReducedMotion } from 'framer-motion'
 
 interface SystemStatusProps {
   activeSection: string
+  isWebGLReady?: boolean
 }
 
 const sectionModes: Record<string, string> = {
-  hero: 'SYSTEM / INITIALIZING',
+  hero: 'SYSTEM / OVERVIEW',
   work: 'SYSTEM / PROJECTS',
   about: 'SYSTEM / PROFILE',
   'build-log': 'SYSTEM / EVOLUTION',
@@ -15,9 +16,14 @@ const sectionModes: Record<string, string> = {
   contact: 'SYSTEM / CONNECT',
 }
 
-export function SystemStatus({ activeSection }: SystemStatusProps) {
+export function SystemStatus({ activeSection, isWebGLReady = true }: SystemStatusProps) {
   const reduceMotion = useReducedMotion()
-  const mode = useMemo(() => sectionModes[activeSection] || 'SYSTEM / ONLINE', [activeSection])
+  const mode = useMemo(() => {
+    if (!isWebGLReady && activeSection === 'hero') {
+      return 'SYSTEM / INITIALIZING'
+    }
+    return sectionModes[activeSection] || 'SYSTEM / ONLINE'
+  }, [activeSection, isWebGLReady])
   const isLime = activeSection === 'contact'
 
   return (
@@ -27,9 +33,9 @@ export function SystemStatus({ activeSection }: SystemStatusProps) {
       data-cursor-theme={isLime ? 'lime' : 'dark'}
     >
       <div className="status-indicator">
-        <span className="status-dot" aria-hidden="true" />
+        <span className={`status-dot ${!isWebGLReady ? 'is-initializing' : ''}`} aria-hidden="true" />
         <span className="status-title">SYSTEM STATUS</span>
-        <span className="status-state">ONLINE</span>
+        <span className="status-state">{isWebGLReady ? 'ONLINE' : 'INITIALIZING'}</span>
       </div>
 
       <div className="status-divider" aria-hidden="true" />

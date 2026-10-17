@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, memo } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 
@@ -9,7 +9,7 @@ interface DataStreamsProps {
   mouseRef: React.MutableRefObject<{ x: number; y: number }>
 }
 
-export function DataStreams({
+function DataStreamsComponent({
   visible = true,
   activeSection = 'hero',
   activeProjectIndex = -1,
@@ -156,3 +156,5 @@ export function DataStreams({
     <lineSegments ref={linesRef} geometry={geometry} material={material} />
   )
 }
+
+export const DataStreams = memo(DataStreamsComponent)

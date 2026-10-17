@@ -144,7 +144,7 @@ export function ResumeModal({ isOpen, onClose }: ResumeModalProps) {
                 <div className="resume-skills-block">
                   <div>
                     <span className="skills-group-title">AI &amp; MACHINE LEARNING</span>
-                    <p>Machine Learning, Computer Vision, Generative AI, OCR, Gemini/Vertex AI, Data Analysis</p>
+                    <p>Machine Learning, Generative AI, AI APIs, Data Analysis</p>
                   </div>
                   <div>
                     <span className="skills-group-title">LANGUAGES</span>
@@ -152,11 +152,11 @@ export function ResumeModal({ isOpen, onClose }: ResumeModalProps) {
                   </div>
                   <div>
                     <span className="skills-group-title">FRONTEND &amp; WEB</span>
-                    <p>React, TypeScript, Vite, Tailwind CSS, HTML5, CSS3, Browser Extensions</p>
+                    <p>React, TypeScript, Vite, Tailwind CSS, HTML5, CSS3</p>
                   </div>
                   <div>
                     <span className="skills-group-title">BACKEND &amp; CLOUD</span>
-                    <p>Node.js, REST APIs, Supabase, Firebase, Firestore, Google Cloud</p>
+                    <p>Node.js, REST APIs, Supabase, Firebase, Google Cloud</p>
                   </div>
                 </div>
               </section>

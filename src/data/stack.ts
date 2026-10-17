@@ -1,7 +1,7 @@
 export const stackGroups = [
   {
     label: 'AI / ML',
-    items: ['Machine Learning', 'Computer Vision', 'Generative AI', 'AI APIs', 'OCR', 'Data Analysis'],
+    items: ['Machine Learning', 'Generative AI', 'AI APIs', 'Data Analysis'],
   },
   {
     label: 'FULL STACK',
@@ -13,7 +13,7 @@ export const stackGroups = [
   },
   {
     label: 'DATA & PLATFORMS',
-    items: ['Supabase', 'PostgreSQL', 'Firebase', 'Firestore', 'Google Maps'],
+    items: ['Supabase', 'PostgreSQL', 'Firebase', 'Google Maps'],
   },
   {
     label: 'DEV WORKSPACE',

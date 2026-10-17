@@ -1,18 +1,22 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
-import { PerspectiveCamera } from '@react-three/drei'
+import { Suspense, useEffect, useRef, useState, lazy } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { AICore } from './AICore'
 import { GroundPlane } from './GroundPlane'
-import { NeuralNetwork } from './NeuralNetwork'
 import type { TechNodeData } from './NeuralNetwork'
 import { AtmosphericEnvironment } from './AtmosphericEnvironment'
 import { DataStreams } from './DataStreams'
 import { SceneController } from './SceneController'
 
+// Lazy-load NeuralNetwork constellation so Drei and troika text are excluded from the initial critical bundle
+const NeuralNetwork = lazy(() =>
+  import('./NeuralNetwork').then((m) => ({ default: m.NeuralNetwork }))
+)
+
 interface PortfolioSceneProps {
   activeProjectIndex?: number
   onHoverTechNode?: (node: TechNodeData | null) => void
   onActiveSectionChange?: (section: string) => void
+  onWebGLReadyChange?: (ready: boolean) => void
 }
 
 function checkWebGLSupport(): boolean {
@@ -28,17 +32,33 @@ function checkWebGLSupport(): boolean {
   }
 }
 
+// Reports the exact frame that WebGL compiles shaders and executes its first render
+function FirstFrameReporter({ onReady }: { onReady: () => void }) {
+  const reported = useRef(false)
+  useFrame(() => {
+    if (!reported.current) {
+      reported.current = true
+      onReady()
+    }
+  })
+  return null
+}
+
 export function PortfolioScene({
   activeProjectIndex = -1,
   onHoverTechNode,
   onActiveSectionChange,
+  onWebGLReadyChange,
 }: PortfolioSceneProps) {
   const [activeSection, setActiveSection] = useState<string>('hero')
-  const [scrollProgress, setScrollProgress] = useState<number>(0)
   const [hasWebGL] = useState<boolean>(() => checkWebGLSupport())
   const [isLoaded, setIsLoaded] = useState<boolean>(false)
   const [isCanvasHovered, setIsCanvasHovered] = useState<boolean>(false)
-  const [coreTransform, setCoreTransform] = useState<{
+
+  // Mutable refs to eliminate React re-renders on animation and scroll loops
+  const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const scrollProgressRef = useRef<number>(0)
+  const coreTransformRef = useRef<{
     position: [number, number, number]
     scale: number
   }>({
@@ -46,12 +66,12 @@ export function PortfolioScene({
     scale: 1.25,
   })
 
-  const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 120)
-    return () => clearTimeout(timer)
-  }, [])
+  const handleWebGLReady = () => {
+    if (!isLoaded) {
+      setIsLoaded(true)
+      onWebGLReadyChange?.(true)
+    }
+  }
 
   useEffect(() => {
     let frameId = 0
@@ -73,7 +93,7 @@ export function PortfolioScene({
         const scrollY = window.scrollY
         const docHeight = document.documentElement.scrollHeight - window.innerHeight
         const progress = docHeight > 0 ? Math.min(1, Math.max(0, scrollY / docHeight)) : 0
-        setScrollProgress(progress)
+        scrollProgressRef.current = progress
 
         // Section intersection detection
         const midPoint = window.innerHeight * 0.45
@@ -121,55 +141,61 @@ export function PortfolioScene({
     }
   }, [onActiveSectionChange])
 
-  // Graceful fallback if WebGL is unavailable
+  // Graceful fallback if WebGL is unavailable (persistent CSS fallback grid already active in App.tsx)
   if (!hasWebGL) {
-    return (
-      <div className="three-fallback-surface" aria-hidden="true">
-        <div className="fallback-grid" />
-      </div>
-    )
+    return null
   }
 
   return (
     <>
-      {/* Minimal non-blocking initialization banner */}
+      {/* Non-blocking initialization banner - disappears on actual first frame rendered */}
       {!isLoaded && (
         <div className="webgl-init-banner" aria-live="polite">
           <span>INITIALIZING 3D ENVIRONMENT</span>
         </div>
       )}
 
+      {/* 3D Canvas Container with smooth progressive fade-in once first frame is ready */}
       <div
         className="three-canvas-container"
         data-cursor-3d="true"
+        style={{
+          opacity: isLoaded ? 1 : 0,
+          transition: 'opacity 500ms cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
         onMouseEnter={() => setIsCanvasHovered(true)}
         onMouseLeave={() => setIsCanvasHovered(false)}
       >
         <Canvas
           shadows
+          camera={{ fov: 45, position: [0, 0.4, 6.8] }}
           gl={{
             antialias: true,
             alpha: true,
             powerPreference: 'high-performance',
           }}
-          dpr={[1, 1.75]}
+          dpr={[1, typeof window !== 'undefined' && window.innerWidth < 768 ? 1.25 : 1.75]}
         >
-          <PerspectiveCamera makeDefault fov={45} position={[0, 0.4, 6.8]} />
+          <FirstFrameReporter onReady={handleWebGLReady} />
 
           {/* Low Ambient Lighting for High-Contrast Studio Definition */}
           <ambientLight color="#0a0d08" intensity={0.75} />
 
-          {/* Key Light: High-angle directional light casting soft shadows */}
+          {/* Key Light: High-angle directional light casting soft bounded shadows */}
           <directionalLight
             position={[5, 8, 5]}
             intensity={1.85}
             color="#ffffff"
             castShadow
-            shadow-mapSize-width={1024}
-            shadow-mapSize-height={1024}
-            shadow-camera-far={25}
+            shadow-mapSize-width={512}
+            shadow-mapSize-height={512}
             shadow-camera-near={1}
-            shadow-bias={-0.0001}
+            shadow-camera-far={20}
+            shadow-camera-left={-3.5}
+            shadow-camera-right={3.5}
+            shadow-camera-top={3.5}
+            shadow-camera-bottom={-3.5}
+            shadow-bias={-0.0002}
           />
 
           {/* Specular Rim Light: Subtle acid-lime separation */}
@@ -185,26 +211,25 @@ export function PortfolioScene({
             {/* Ground Plane with Dynamic Shadow Tracking directly beneath the AI Core */}
             <GroundPlane
               position={[0, -3.2, 0]}
-              coreX={coreTransform.position[0]}
-              coreZ={coreTransform.position[2]}
-              coreScale={coreTransform.scale}
+              coreTransformRef={coreTransformRef}
             />
 
-            {/* 3-Tier Layered Atmospheric Depth Environment */}
-            <AtmosphericEnvironment activeSection={activeSection} mouseRef={mouseRef} />
+            {/* 3-Tier Layered Atmospheric Depth Environment - staged after initial WebGL frame */}
+            {isLoaded && <AtmosphericEnvironment activeSection={activeSection} mouseRef={mouseRef} />}
 
-            {/* Ambient Procedural Computational Data Streams */}
-            <DataStreams
-              visible={activeSection !== 'contact'}
-              activeSection={activeSection}
-              activeProjectIndex={activeProjectIndex}
-              mouseRef={mouseRef}
-            />
+            {/* Ambient Procedural Computational Data Streams - staged after initial WebGL frame */}
+            {isLoaded && (
+              <DataStreams
+                visible={activeSection !== 'contact'}
+                activeSection={activeSection}
+                activeProjectIndex={activeProjectIndex}
+                mouseRef={mouseRef}
+              />
+            )}
 
             {/* Persistent Engineered AI Computational Sculpture */}
             <AICore
-              position={coreTransform.position}
-              scale={coreTransform.scale}
+              coreTransformRef={coreTransformRef}
               activeSection={activeSection}
               activeProjectIndex={activeProjectIndex}
               isHovered={isCanvasHovered}
@@ -212,20 +237,22 @@ export function PortfolioScene({
             />
 
             {/* Interactive 3D Neural Constellation for the STACK section */}
-            <NeuralNetwork
-              visible={activeSection === 'stack'}
-              activeProjectIndex={activeProjectIndex}
-              onHoverNode={onHoverTechNode}
-              mouseRef={mouseRef}
-            />
+            {activeSection === 'stack' && (
+              <NeuralNetwork
+                visible={true}
+                activeProjectIndex={activeProjectIndex}
+                onHoverNode={onHoverTechNode}
+                mouseRef={mouseRef}
+              />
+            )}
 
             {/* Cinematic Camera Journey Controller with Damped Motion */}
             <SceneController
               activeSection={activeSection}
-              scrollProgress={scrollProgress}
+              scrollProgressRef={scrollProgressRef}
               isCoreHovered={isCanvasHovered}
               mouseRef={mouseRef}
-              onCoreTransform={setCoreTransform}
+              coreTransformRef={coreTransformRef}
             />
           </Suspense>
         </Canvas>

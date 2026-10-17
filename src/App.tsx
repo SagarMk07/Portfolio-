@@ -1,12 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, lazy, Suspense } from 'react'
 import { ArrowDown, ArrowUpRight, Copy, Check, MoveUpRight, Sparkles } from 'lucide-react'
 import { motion, useReducedMotion, useScroll, useSpring } from 'framer-motion'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { projects, type Project } from './data/projects'
 import { Navigation } from './components/Navigation'
 import { CustomCursor } from './components/CustomCursor'
-import { PortfolioScene } from './components/three/PortfolioScene'
 import type { TechNodeData } from './components/three/NeuralNetwork'
+
+// Asynchronously load 3D scene so Three.js does not block HTML/CSS first paint
+const PortfolioScene = lazy(() =>
+  import('./components/three/PortfolioScene').then((m) => ({ default: m.PortfolioScene }))
+)
 import { InteractiveStack } from './components/InteractiveStack'
 import { SectionHeading } from './components/SectionHeading'
 import { ProjectRow } from './components/ProjectRow'
@@ -27,7 +31,7 @@ import {
 
 const linkedin = 'https://www.linkedin.com/in/sagar-kalagudi-b375163a2/'
 const github = 'https://github.com/SagarMk07'
-const email = 'sagarkalagudi7@gmail.com'
+const email = 'sagarmkalagudi547@gmail.com'
 
 // Hero Typography Entrance with heavy cinematic easing cubic-bezier(0.16, 1, 0.3, 1)
 const heroTitleVariants = {
@@ -64,7 +68,7 @@ const heroBottomVariants = {
 
 function Hero({ onOpenResume }: { onOpenResume: () => void }) {
   const reduceMotion = useReducedMotion()
-  const [pointerOffset, setPointerOffset] = useState({ x: 0, y: 0 })
+  const leftPosterRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (reduceMotion) return
@@ -76,10 +80,11 @@ function Hero({ onOpenResume }: { onOpenResume: () => void }) {
           // Controlled subtle pointer parallax displacement (max X = ±8px, max Y = ±5px)
           const normX = (e.clientX / window.innerWidth - 0.5) * 16
           const normY = (e.clientY / window.innerHeight - 0.5) * 10
-          setPointerOffset({
-            x: Math.max(-8, Math.min(8, normX)),
-            y: Math.max(-5, Math.min(5, normY)),
-          })
+          const clampedX = Math.max(-8, Math.min(8, normX))
+          const clampedY = Math.max(-5, Math.min(5, normY))
+          if (leftPosterRef.current) {
+            leftPosterRef.current.style.transform = `translate3d(${clampedX}px, ${clampedY}px, 0)`
+          }
         })
       }
     }
@@ -109,12 +114,12 @@ function Hero({ onOpenResume }: { onOpenResume: () => void }) {
       <div className="hero-poster-grid">
         {/* LEFT: Large Personal Typography with controlled parallax displacement */}
         <div
+          ref={leftPosterRef}
           className="hero-poster-left"
           style={
             reduceMotion
               ? undefined
               : {
-                  transform: `translate3d(${pointerOffset.x}px, ${pointerOffset.y}px, 0)`,
                   transition: 'transform 240ms cubic-bezier(0.16, 1, 0.3, 1)',
                 }
           }
@@ -582,6 +587,22 @@ export default function App() {
   const [activeProjectIndex, setActiveProjectIndex] = useState<number>(-1)
   const [activeSection, setActiveSection] = useState<string>('hero')
   const [isResumeOpen, setIsResumeOpen] = useState<boolean>(false)
+  const [isWebGLReady, setIsWebGLReady] = useState<boolean>(false)
+  const [shouldMount3D, setShouldMount3D] = useState<boolean>(false)
+
+  // Progressively mount 3D canvas only after critical hero UI and CSS fallback grid are painted
+  useEffect(() => {
+    if ('requestIdleCallback' in window) {
+      const handle = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(
+        () => setShouldMount3D(true),
+        { timeout: 120 }
+      )
+      return () => (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(handle)
+    } else {
+      const timer = setTimeout(() => setShouldMount3D(true), 60)
+      return () => clearTimeout(timer)
+    }
+  }, [])
 
   useEffect(() => {
     let frame = 0
@@ -602,12 +623,22 @@ export default function App() {
 
   return (
     <>
-      {/* Real Persistent 3D WebGL Scene using Three.js, React Three Fiber & Drei */}
-      <PortfolioScene
-        activeProjectIndex={activeProjectIndex}
-        onHoverTechNode={setHovered3DNode}
-        onActiveSectionChange={setActiveSection}
-      />
+      {/* Persistent CSS Spatial Background: Rendered immediately on Frame 0 before JS */}
+      <div className="three-fallback-surface" aria-hidden="true">
+        <div className="fallback-grid" />
+      </div>
+
+      {/* Progressively Loaded 3D WebGL Scene: Mounted after critical Hero DOM first paint */}
+      {shouldMount3D && (
+        <Suspense fallback={null}>
+          <PortfolioScene
+            activeProjectIndex={activeProjectIndex}
+            onHoverTechNode={setHovered3DNode}
+            onActiveSectionChange={setActiveSection}
+            onWebGLReadyChange={setIsWebGLReady}
+          />
+        </Suspense>
+      )}
 
       {/* Global Navigation Header with Scroll Progress Bar */}
       <Navigation />
@@ -616,7 +647,7 @@ export default function App() {
       <CustomCursor />
 
       {/* Ambient System Status Telemetry HUD */}
-      <SystemStatus activeSection={activeSection} />
+      <SystemStatus activeSection={activeSection} isWebGLReady={isWebGLReady} />
 
       {/* Clean Verified Resume/CV Modal */}
       <ResumeModal isOpen={isResumeOpen} onClose={() => setIsResumeOpen(false)} />

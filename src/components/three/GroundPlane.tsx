@@ -1,39 +1,44 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, memo } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 
 interface GroundPlaneProps {
   position?: [number, number, number]
+  coreTransformRef?: React.MutableRefObject<{ position: [number, number, number]; scale: number }>
   coreX?: number
   coreZ?: number
   coreScale?: number
 }
 
-export function GroundPlane({
+function GroundPlaneComponent({
   position = [0, -3.2, 0],
+  coreTransformRef,
   coreX = 1.15,
   coreZ = 0,
   coreScale = 1.25,
 }: GroundPlaneProps) {
   const shadowMeshRef = useRef<THREE.Mesh>(null)
 
-  // Soft radial contact shadow texture generated procedurally
+  // Soft radial contact shadow texture generated procedurally (optimized 128x128)
   const shadowTexture = useMemo(() => {
     if (typeof document === 'undefined') return null
     const canvas = document.createElement('canvas')
-    canvas.width = 256
-    canvas.height = 256
+    canvas.width = 128
+    canvas.height = 128
     const ctx = canvas.getContext('2d')
     if (ctx) {
-      const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128)
+      const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64)
       gradient.addColorStop(0, 'rgba(0, 0, 0, 0.90)')
       gradient.addColorStop(0.35, 'rgba(0, 0, 0, 0.55)')
       gradient.addColorStop(0.68, 'rgba(0, 0, 0, 0.20)')
       gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
       ctx.fillStyle = gradient
-      ctx.fillRect(0, 0, 256, 256)
+      ctx.fillRect(0, 0, 128, 128)
     }
     const tex = new THREE.CanvasTexture(canvas)
+    tex.generateMipmaps = false
+    tex.minFilter = THREE.LinearFilter
+    tex.magFilter = THREE.LinearFilter
     return tex
   }, [])
 
@@ -72,7 +77,7 @@ export function GroundPlane({
     return { floor, gridLines, ringLines, contactShadow }
   }, [shadowTexture])
 
-  const { gridGeometry, ringGeometries } = useMemo(() => {
+  const { gridGeometry, ringsGeometry } = useMemo(() => {
     // 1. Orthogonal coordinate grid
     const points: THREE.Vector3[] = []
     const size = 40
@@ -87,40 +92,46 @@ export function GroundPlane({
 
     const gridGeo = new THREE.BufferGeometry().setFromPoints(points)
 
-    // 2. Concentric radial target rings beneath the sculpture
+    // 2. Concentric radial target rings merged into a single geometry (single draw call)
+    const ringPts: THREE.Vector3[] = []
     const radii = [3.5, 7.5, 13, 20, 28]
-    const rings = radii.map((radius) => {
-      const ringPts: THREE.Vector3[] = []
-      const segments = 80
-      for (let s = 0; s <= segments; s++) {
-        const theta = (s / segments) * Math.PI * 2
-        ringPts.push(new THREE.Vector3(Math.cos(theta) * radius, 0.02, Math.sin(theta) * radius))
+    const segments = 64
+    for (const radius of radii) {
+      for (let s = 0; s < segments; s++) {
+        const theta1 = (s / segments) * Math.PI * 2
+        const theta2 = ((s + 1) / segments) * Math.PI * 2
+        ringPts.push(new THREE.Vector3(Math.cos(theta1) * radius, 0.02, Math.sin(theta1) * radius))
+        ringPts.push(new THREE.Vector3(Math.cos(theta2) * radius, 0.02, Math.sin(theta2) * radius))
       }
-      return new THREE.BufferGeometry().setFromPoints(ringPts)
-    })
+    }
+    const ringsGeo = new THREE.BufferGeometry().setFromPoints(ringPts)
 
-    return { gridGeometry: gridGeo, ringGeometries: rings }
+    return { gridGeometry: gridGeo, ringsGeometry: ringsGeo }
   }, [])
 
   // Smoothly lerp contact shadow position and scale to match core sculpture coordinates
   useFrame(() => {
     if (shadowMeshRef.current && materials.contactShadow) {
+      const targetCoreX = coreTransformRef ? coreTransformRef.current.position[0] : coreX
+      const targetCoreZ = coreTransformRef ? coreTransformRef.current.position[2] : coreZ
+      const targetCoreScale = coreTransformRef ? coreTransformRef.current.scale : coreScale
+
       shadowMeshRef.current.position.x = THREE.MathUtils.lerp(
         shadowMeshRef.current.position.x,
-        coreX,
+        targetCoreX,
         0.06
       )
       shadowMeshRef.current.position.y = 0.012
       shadowMeshRef.current.position.z = THREE.MathUtils.lerp(
         shadowMeshRef.current.position.z,
-        coreZ,
+        targetCoreZ,
         0.06
       )
-      const targetScale = Math.max(0.0001, coreScale * 0.95)
+      const targetScale = Math.max(0.0001, targetCoreScale * 0.95)
       shadowMeshRef.current.scale.setScalar(
         THREE.MathUtils.lerp(shadowMeshRef.current.scale.x, targetScale, 0.06)
       )
-      materials.contactShadow.opacity = Math.min(0.85, Math.max(0.02, coreScale * 0.65))
+      materials.contactShadow.opacity = Math.min(0.85, Math.max(0.02, targetCoreScale * 0.65))
     }
   })
 
@@ -146,10 +157,10 @@ export function GroundPlane({
       {/* Subtle Orthogonal Ground Grid */}
       <lineSegments geometry={gridGeometry} material={materials.gridLines} />
 
-      {/* Radial Metric Target Rings */}
-      {ringGeometries.map((geo, idx) => (
-        <lineSegments key={idx} geometry={geo} material={materials.ringLines} />
-      ))}
+      {/* Radial Metric Target Rings (single draw call) */}
+      <lineSegments geometry={ringsGeometry} material={materials.ringLines} />
     </group>
   )
 }
+
+export const GroundPlane = memo(GroundPlaneComponent)

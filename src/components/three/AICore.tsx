@@ -1,8 +1,9 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, memo } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 
 interface AICoreProps {
+  coreTransformRef?: React.MutableRefObject<{ position: [number, number, number]; scale: number }>
   position?: [number, number, number]
   scale?: number
   activeSection?: string
@@ -11,7 +12,8 @@ interface AICoreProps {
   mouseRef: React.MutableRefObject<{ x: number; y: number }>
 }
 
-export function AICore({
+function AICoreComponent({
+  coreTransformRef,
   position = [1.15, 0, 0],
   scale = 1.25,
   activeSection = 'hero',
@@ -86,19 +88,11 @@ export function AICore({
       opacity: 0.45,
     })
 
-    const telemetryBeamMat = new THREE.LineBasicMaterial({
-      color: '#c7ff3d',
-      transparent: true,
-      opacity: 0.15,
-    })
+    // Share identical acid-lime line material with exoskeletonCage
+    const telemetryBeamMat = exoskeletonCage
 
-    const satelliteMat = new THREE.MeshStandardMaterial({
-      color: '#f0f3eb',
-      emissive: '#c7ff3d',
-      emissiveIntensity: 0.55,
-      metalness: 0.90,
-      roughness: 0.18,
-    })
+    // Share titanium emissive PBR material with cornerNode
+    const satelliteMat = cornerNode
 
     // 3. Inner Crystalline Octahedron & Luminous Edges
     const crystal = new THREE.MeshStandardMaterial({
@@ -154,7 +148,8 @@ export function AICore({
     // Two Aerospace Rings (Ring 1: radius 2.05, Ring 2: radius 2.42)
     const ring1Geo = new THREE.TorusGeometry(2.05, 0.022, 16, 96)
     const ring2Geo = new THREE.TorusGeometry(2.42, 0.018, 16, 96)
-    const satGeo = new THREE.SphereGeometry(0.045, 12, 12)
+    // Reuse cornerNodeGeo sphere geometry for satellites to reduce buffer allocations
+    const satGeo = cornerNodeGeo
 
     // Aerospace Caliber Tick Marks along Ring 1
     const tickPoints: number[] = []
@@ -243,12 +238,17 @@ export function AICore({
     const mouse = mouseRef.current
     const isContact = activeSection === 'contact'
     const contactDamping = isContact ? 0.04 : 1.0
+    const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    // Target coordinates from shared ref or base props
+    const targetPos = coreTransformRef ? coreTransformRef.current.position : position
+    const targetBaseScale = coreTransformRef ? coreTransformRef.current.scale : scale
 
     // Compute pointer proximity to center-right core (hero focal point)
     const coreScreenX = activeSection === 'hero' ? 0.35 : 0.0
     const coreScreenY = 0.0
     const distSq = (mouse.x - coreScreenX) ** 2 + (mouse.y - coreScreenY) ** 2
-    const targetProximity = isHovered || distSq < 0.35 ? Math.max(0, 1 - Math.sqrt(distSq) / 0.8) : 0
+    const targetProximity = (isHovered || distSq < 0.35) && !reduceMotion ? Math.max(0, 1 - Math.sqrt(distSq) / 0.8) : 0
 
     // Smoothly damp proximity factor
     proximityRef.current = THREE.MathUtils.lerp(proximityRef.current, targetProximity, 0.05)
@@ -256,37 +256,40 @@ export function AICore({
 
     // 1. Root group gentle physical levitation and mouse tilt
     if (rootGroupRef.current) {
-      const floatY = Math.sin(time * 0.9) * 0.1 * contactDamping
+      const floatY = reduceMotion ? 0 : Math.sin(time * 0.9) * 0.1 * contactDamping
+      const mouseOffsetX = reduceMotion ? 0 : mouse.x * 0.35 * contactDamping
+      const mouseOffsetZ = reduceMotion ? 0 : prox * 0.22
+
       rootGroupRef.current.position.y = THREE.MathUtils.lerp(
         rootGroupRef.current.position.y,
-        position[1] + floatY,
+        targetPos[1] + floatY,
         0.06
       )
       rootGroupRef.current.position.x = THREE.MathUtils.lerp(
         rootGroupRef.current.position.x,
-        position[0] + mouse.x * 0.35 * contactDamping,
+        targetPos[0] + mouseOffsetX,
         0.05
       )
       rootGroupRef.current.position.z = THREE.MathUtils.lerp(
         rootGroupRef.current.position.z,
-        position[2] + prox * 0.22,
+        targetPos[2] + mouseOffsetZ,
         0.06
       )
 
       // Damped mechanical angular tilt (never raw coordinates)
-      const targetRotX = mouse.y * 0.16 * contactDamping
-      const targetRotY = mouse.x * 0.22 * contactDamping
+      const targetRotX = reduceMotion ? 0 : mouse.y * 0.16 * contactDamping
+      const targetRotY = reduceMotion ? 0 : mouse.x * 0.22 * contactDamping
       rootGroupRef.current.rotation.x = THREE.MathUtils.lerp(rootGroupRef.current.rotation.x, targetRotX, 0.05)
       rootGroupRef.current.rotation.y = THREE.MathUtils.lerp(rootGroupRef.current.rotation.y, targetRotY, 0.05)
 
       // Section scale transitions
-      let targetScale = scale
+      let targetScale = targetBaseScale
       if (isContact) {
         targetScale = 0.0001 // Dissolve into quantum singularity
       } else if (activeSection === 'stack') {
-        targetScale = scale * 0.42
+        targetScale = targetBaseScale * 0.42
       } else if (activeSection === 'about') {
-        targetScale = scale * 0.88
+        targetScale = targetBaseScale * 0.88
       }
       rootGroupRef.current.scale.setScalar(
         THREE.MathUtils.lerp(rootGroupRef.current.scale.x, targetScale, 0.06)
@@ -477,3 +480,5 @@ export function AICore({
     </group>
   )
 }
+
+export const AICore = memo(AICoreComponent)
