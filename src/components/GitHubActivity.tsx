@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowUpRight, Github } from 'lucide-react'
 import { LineReveal } from './LineReveal'
@@ -57,39 +57,229 @@ function getGitHubData(): Promise<GitHubData> {
 }
 
 function RepositorySkeleton() {
-  return <div className="repo-skeleton-list" role="status" aria-label="Fetching public repositories">
-    {[0, 1, 2].map(index => <div className="repo-skeleton-row" key={index}><span className="repo-num">0{index + 1}</span><div><i/><i/></div><i className="repo-skeleton-language"/></div>)}
-  </div>
+  return (
+    <div className="repo-skeleton-list" role="status" aria-label="Fetching public repositories">
+      {[0, 1, 2].map(index => (
+        <div className="repo-skeleton-row" key={`skel-${index}`}>
+          <span className="repo-num">0{index + 1}</span>
+          <div><i /><i /></div>
+          <i className="repo-skeleton-language" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+type GitHubStoreState = {
+  profile: Profile | null
+  repos: Repo[]
+  state: GitHubState
+}
+
+let storeState: GitHubStoreState = {
+  profile: null,
+  repos: [],
+  state: 'loading',
+}
+
+const listeners = new Set<() => void>()
+
+function subscribe(callback: () => void) {
+  listeners.add(callback)
+  return () => {
+    listeners.delete(callback)
+  }
+}
+
+function getSnapshot() {
+  return storeState
+}
+
+let fetchStarted = false
+function initGitHubFetch() {
+  if (fetchStarted) return
+  fetchStarted = true
+
+  getGitHubData()
+    .then((data) => {
+      storeState = { profile: data.profile, repos: data.repos, state: 'ready' }
+      listeners.forEach((fn) => fn())
+    })
+    .catch(() => {
+      storeState = { profile: null, repos: [], state: 'fallback' }
+      listeners.forEach((fn) => fn())
+    })
+}
+
+function useGitHubData() {
+  initGitHubFetch()
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+}
+
+function ProfileStats({ state, profile }: { state: GitHubState; profile: Profile | null }) {
+  if (state === 'ready' && profile) {
+    return (
+      <div className="github-stats">
+        <span><b>{profile.public_repos}</b> PUBLIC REPOSITORIES</span>
+        <span><b>{profile.followers}</b> FOLLOWERS</span>
+      </div>
+    )
+  }
+  if (state === 'loading') {
+    return (
+      <div className="github-stats-skeleton" aria-label="Fetching profile totals">
+        <i /><i />
+      </div>
+    )
+  }
+  return <div className="github-stats-empty" />
+}
+
+function StateMessage({ state }: { state: GitHubState }) {
+  if (state === 'loading') {
+    return <p className="github-fallback">FETCHING PUBLIC REPOSITORY DATA</p>
+  }
+  if (state === 'fallback') {
+    return <p className="github-fallback">Live repository data is unavailable right now. The profile remains open to explore.</p>
+  }
+  return null
+}
+
+function RepoList({ state, repos }: { state: GitHubState; repos: Repo[] }) {
+  if (state === 'ready' && repos.length > 0) {
+    return (
+      <>
+        {repos.map((repo, index) => (
+          <motion.a
+            variants={revealItemVariants}
+            className="repo-row"
+            href={repo.html_url}
+            target="_blank"
+            rel="noreferrer"
+            key={repo.id}
+          >
+            <span className="repo-num">0{index + 1}</span>
+            <div>
+              <strong>{repo.name}</strong>
+              <p>{repo.description || 'Repository description not provided.'}</p>
+            </div>
+            <span className="repo-language">{repo.language || '—'}</span>
+            <ArrowUpRight size={17} />
+          </motion.a>
+        ))}
+      </>
+    )
+  }
+  if (state === 'loading') {
+    return <RepositorySkeleton />
+  }
+  return (
+    <motion.a
+      variants={revealItemVariants}
+      className="repo-row repo-fallback"
+      href={profileUrl}
+      target="_blank"
+      rel="noreferrer"
+    >
+      <span className="repo-num">↗</span>
+      <div>
+        <strong>Explore all repositories</strong>
+        <p>View projects, experiments, and code on GitHub.</p>
+      </div>
+      <span className="repo-language">GITHUB</span>
+      <ArrowUpRight size={17} />
+    </motion.a>
+  )
 }
 
 export function GitHubActivity() {
   const reduceMotion = useReducedMotion()
-  const [repos, setRepos] = useState<Repo[]>([])
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [state, setState] = useState<GitHubState>('loading')
+  const { repos, profile, state } = useGitHubData()
 
-  useEffect(() => {
-    let active = true
-    getGitHubData().then(data => {
-      if (!active) return
-      setProfile(data.profile)
-      setRepos(data.repos)
-      setState('ready')
-    }).catch(() => {
-      if (active) setState('fallback')
-    })
-    return () => { active = false }
-  }, [])
-
-  return <section className="github-section" id="github" data-cursor-theme="dark">
-    <div className="github-top"><div><motion.div className="section-kicker" variants={fadeUpVariants} initial={reduceMotion ? false : 'hidden'} whileInView={reduceMotion ? undefined : 'visible'} viewport={{ once: true, amount: 0.3 }}><span>06 /</span> OPEN SOURCE</motion.div><LineReveal as="h2" lines={['BUILDING IN', <em>PUBLIC.</em>]}/></div><motion.a className="github-profile" href={profileUrl} target="_blank" rel="noreferrer" variants={fadeUpVariants} initial={reduceMotion ? false : 'hidden'} whileInView={reduceMotion ? undefined : 'visible'} viewport={{ once: true, amount: 0.3 }}><Github size={18}/> <span>@SagarMk07</span><ArrowUpRight size={17}/></motion.a></div>
-    <div className="github-content">
-      <div className="github-copy"><motion.p variants={fadeUpVariants} initial={reduceMotion ? false : 'hidden'} whileInView={reduceMotion ? undefined : 'visible'} viewport={{ once: true, amount: 0.3 }}>Code is where ideas meet their edge cases. Explore the repositories and experiments behind the work.</motion.p>
-        <motion.div className="github-stats-slot" aria-live="polite" variants={fadeUpVariants} initial={reduceMotion ? false : 'hidden'} whileInView={reduceMotion ? undefined : 'visible'} viewport={{ once: true, amount: 0.3 }}>{state === 'ready' && profile ? <div className="github-stats"><span><b>{profile.public_repos}</b> PUBLIC REPOSITORIES</span><span><b>{profile.followers}</b> FOLLOWERS</span></div> : state === 'loading' ? <div className="github-stats-skeleton" aria-label="Fetching profile totals"><i/><i/></div> : <div className="github-stats-empty"/>}</motion.div>
-        <motion.div className="github-state-slot" aria-live="polite" variants={fadeUpVariants} initial={reduceMotion ? false : 'hidden'} whileInView={reduceMotion ? undefined : 'visible'} viewport={{ once: true, amount: 0.3 }}>{state === 'loading' ? <p className="github-fallback">FETCHING PUBLIC REPOSITORY DATA</p> : state === 'fallback' ? <p className="github-fallback">Live repository data is unavailable right now. The profile remains open to explore.</p> : null}</motion.div>
+  return (
+    <section className="github-section" id="github" data-cursor-theme="dark">
+      <div className="github-top">
+        <div>
+          <motion.div
+            className="section-kicker"
+            variants={fadeUpVariants}
+            initial={reduceMotion ? false : 'hidden'}
+            whileInView={reduceMotion ? undefined : 'visible'}
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            <span>06 /</span> OPEN SOURCE
+          </motion.div>
+          <LineReveal as="h2" lines={['BUILDING IN', <em>PUBLIC.</em>]} />
+        </div>
+        <motion.a
+          className="github-profile"
+          href={profileUrl}
+          target="_blank"
+          rel="noreferrer"
+          variants={fadeUpVariants}
+          initial={reduceMotion ? false : 'hidden'}
+          whileInView={reduceMotion ? undefined : 'visible'}
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          <Github size={18} /> <span>@SagarMk07</span><ArrowUpRight size={17} />
+        </motion.a>
       </div>
-      <motion.div className="repo-list" aria-busy={state === 'loading'} variants={staggerVariants} initial={reduceMotion ? false : 'hidden'} whileInView={reduceMotion ? undefined : 'visible'} viewport={{ once: true, amount: 0.18 }}>{state === 'ready' && repos.length > 0 ? repos.map((repo, index) => <motion.a variants={revealItemVariants} className="repo-row" href={repo.html_url} target="_blank" rel="noreferrer" key={repo.id}><span className="repo-num">0{index + 1}</span><div><strong>{repo.name}</strong><p>{repo.description || 'Repository description not provided.'}</p></div><span className="repo-language">{repo.language || '—'}</span><ArrowUpRight size={17}/></motion.a>) : state === 'loading' ? <RepositorySkeleton/> : <motion.a variants={revealItemVariants} className="repo-row repo-fallback" href={profileUrl} target="_blank" rel="noreferrer"><span className="repo-num">↗</span><div><strong>Explore all repositories</strong><p>View projects, experiments, and code on GitHub.</p></div><span className="repo-language">GITHUB</span><ArrowUpRight size={17}/></motion.a>}</motion.div>
-    </div>
-    <motion.div className="contrib-link" variants={fadeUpVariants} initial={reduceMotion ? false : 'hidden'} whileInView={reduceMotion ? undefined : 'visible'} viewport={{ once: true, amount: 0.3 }}><span className="contrib-mark">▦</span><span>CONTRIBUTION ACTIVITY</span><span className="contrib-note">View the live contribution graph on GitHub</span><a href={`${profileUrl}?tab=overview`} target="_blank" rel="noreferrer" aria-label="View GitHub contribution activity"><ArrowUpRight size={17}/></a></motion.div>
-  </section>
+      <div className="github-content">
+        <div className="github-copy">
+          <motion.p
+            variants={fadeUpVariants}
+            initial={reduceMotion ? false : 'hidden'}
+            whileInView={reduceMotion ? undefined : 'visible'}
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            Code is where ideas meet their edge cases. Explore the repositories and experiments behind the work.
+          </motion.p>
+          <motion.div
+            className="github-stats-slot"
+            aria-live="polite"
+            variants={fadeUpVariants}
+            initial={reduceMotion ? false : 'hidden'}
+            whileInView={reduceMotion ? undefined : 'visible'}
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            <ProfileStats state={state} profile={profile} />
+          </motion.div>
+          <motion.div
+            className="github-state-slot"
+            aria-live="polite"
+            variants={fadeUpVariants}
+            initial={reduceMotion ? false : 'hidden'}
+            whileInView={reduceMotion ? undefined : 'visible'}
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            <StateMessage state={state} />
+          </motion.div>
+        </div>
+        <motion.div
+          className="repo-list"
+          aria-busy={state === 'loading'}
+          variants={staggerVariants}
+          initial={reduceMotion ? false : 'hidden'}
+          whileInView={reduceMotion ? undefined : 'visible'}
+          viewport={{ once: true, amount: 0.18 }}
+        >
+          <RepoList state={state} repos={repos} />
+        </motion.div>
+      </div>
+      <motion.div
+        className="contrib-link"
+        variants={fadeUpVariants}
+        initial={reduceMotion ? false : 'hidden'}
+        whileInView={reduceMotion ? undefined : 'visible'}
+        viewport={{ once: true, amount: 0.3 }}
+      >
+        <span className="contrib-mark">▦</span>
+        <span>CONTRIBUTION ACTIVITY</span>
+        <span className="contrib-note">View the live contribution graph on GitHub</span>
+        <a href={`${profileUrl}?tab=overview`} target="_blank" rel="noreferrer" aria-label="View GitHub contribution activity">
+          <ArrowUpRight size={17} />
+        </a>
+      </motion.div>
+    </section>
+  )
 }

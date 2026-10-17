@@ -12,11 +12,28 @@ type Props = {
 export function LineReveal({ as, className, lines, amount = 0.22 }: Props) {
   const reduceMotion = useReducedMotion()
   const Heading = as === 'h1' ? motion.h1 : as === 'h2' ? motion.h2 : motion.h3
-  return <Heading
-    className={`line-reveal${className ? ` ${className}` : ''}`}
-    variants={lineContainerVariants}
-    initial={reduceMotion ? false : 'hidden'}
-    whileInView={reduceMotion ? undefined : 'visible'}
-    viewport={{ once: true, amount }}
-  >{lines.map((line, index) => <span className="line-reveal__mask" key={index}><motion.span variants={lineItemVariants}>{line}</motion.span></span>)}</Heading>
+  return (
+    <Heading
+      className={`line-reveal${className ? ` ${className}` : ''}`}
+      variants={lineContainerVariants}
+      initial={reduceMotion ? false : 'hidden'}
+      whileInView={reduceMotion ? undefined : 'visible'}
+      viewport={{ once: true, amount }}
+    >
+      {lines.map((line) => {
+        const lineKey =
+          typeof line === 'string'
+            ? line
+            : line && typeof line === 'object' && 'key' in line && line.key != null
+              ? String(line.key)
+              : 'line-emphasis'
+
+        return (
+          <span className="line-reveal__mask" key={lineKey}>
+            <motion.span variants={lineItemVariants}>{line}</motion.span>
+          </span>
+        )
+      })}
+    </Heading>
+  )
 }

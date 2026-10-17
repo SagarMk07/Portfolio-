@@ -607,12 +607,17 @@ export default function App() {
   useEffect(() => {
     let frame = 0
     if (location.hash) {
-      frame = requestAnimationFrame(() =>
-        document.querySelector(location.hash)?.scrollIntoView({
-          behavior: reduceMotion ? 'auto' : 'smooth',
-          block: 'start',
-        })
-      )
+      frame = requestAnimationFrame(() => {
+        try {
+          const target = document.querySelector(location.hash)
+          target?.scrollIntoView({
+            behavior: reduceMotion ? 'auto' : 'smooth',
+            block: 'start',
+          })
+        } catch {
+          // Gracefully catch invalid non-literal selector
+        }
+      })
     } else {
       window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' })
     }

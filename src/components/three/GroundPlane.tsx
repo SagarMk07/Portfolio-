@@ -110,26 +110,27 @@ function GroundPlaneComponent({
   }, [])
 
   // Smoothly lerp contact shadow position and scale to match core sculpture coordinates
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (shadowMeshRef.current && materials.contactShadow) {
       const targetCoreX = coreTransformRef ? coreTransformRef.current.position[0] : coreX
       const targetCoreZ = coreTransformRef ? coreTransformRef.current.position[2] : coreZ
       const targetCoreScale = coreTransformRef ? coreTransformRef.current.scale : coreScale
 
+      const damp36 = 1 - Math.exp(-3.6 * delta)
       shadowMeshRef.current.position.x = THREE.MathUtils.lerp(
         shadowMeshRef.current.position.x,
         targetCoreX,
-        0.06
+        damp36
       )
       shadowMeshRef.current.position.y = 0.012
       shadowMeshRef.current.position.z = THREE.MathUtils.lerp(
         shadowMeshRef.current.position.z,
         targetCoreZ,
-        0.06
+        damp36
       )
       const targetScale = Math.max(0.0001, targetCoreScale * 0.95)
       shadowMeshRef.current.scale.setScalar(
-        THREE.MathUtils.lerp(shadowMeshRef.current.scale.x, targetScale, 0.06)
+        THREE.MathUtils.lerp(shadowMeshRef.current.scale.x, targetScale, damp36)
       )
       materials.contactShadow.opacity = Math.min(0.85, Math.max(0.02, targetCoreScale * 0.65))
     }

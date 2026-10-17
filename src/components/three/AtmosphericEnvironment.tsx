@@ -122,7 +122,7 @@ function AtmosphericEnvironmentComponent({
   // Dynamic frame loop with differential movement speeds for genuine parallax depth
   useFrame((state, delta) => {
     const mouse = mouseRef.current
-    const time = state.clock.getElapsedTime()
+    const time = state.clock.elapsedTime
     const isContact = activeSection === 'contact'
     const speedMult = isContact ? 0.08 : 1.0
     const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -130,17 +130,23 @@ function AtmosphericEnvironmentComponent({
     const mouseX = reduceMotion ? 0 : mouse.x
     const mouseY = reduceMotion ? 0 : mouse.y
 
+    // Frame-rate independent exponential damping factors
+    const damp18 = 1 - Math.exp(-1.8 * delta)
+    const damp24 = 1 - Math.exp(-2.4 * delta)
+    const damp30 = 1 - Math.exp(-3.0 * delta)
+    const damp36 = 1 - Math.exp(-3.6 * delta)
+
     // 1. Background Grid (slowest parallax: 0.05x)
     if (bgGridRef.current) {
       bgGridRef.current.position.x = THREE.MathUtils.lerp(
         bgGridRef.current.position.x,
         mouseX * 0.08,
-        0.03
+        damp18
       )
       bgGridRef.current.position.y = THREE.MathUtils.lerp(
         bgGridRef.current.position.y,
         -0.8 - mouseY * 0.05,
-        0.03
+        damp18
       )
     }
 
@@ -150,12 +156,12 @@ function AtmosphericEnvironmentComponent({
       midPointsRef.current.position.x = THREE.MathUtils.lerp(
         midPointsRef.current.position.x,
         mouseX * 0.32,
-        0.04
+        damp24
       )
       midPointsRef.current.position.y = THREE.MathUtils.lerp(
         midPointsRef.current.position.y,
         -mouseY * 0.22,
-        0.04
+        damp24
       )
     }
 
@@ -164,12 +170,12 @@ function AtmosphericEnvironmentComponent({
       fgPointsRef.current.position.x = THREE.MathUtils.lerp(
         fgPointsRef.current.position.x,
         mouseX * 0.85,
-        0.05
+        damp30
       )
       fgPointsRef.current.position.y = THREE.MathUtils.lerp(
         fgPointsRef.current.position.y,
         -mouseY * 0.55,
-        0.05
+        damp30
       )
       fgPointsRef.current.rotation.z += reduceMotion ? 0 : delta * 0.012 * speedMult
     }
@@ -179,22 +185,22 @@ function AtmosphericEnvironmentComponent({
       streakRef.current.position.x = THREE.MathUtils.lerp(
         streakRef.current.position.x,
         mouseX * 0.9 + (reduceMotion ? 0 : Math.sin(time * 0.4) * 0.15),
-        0.05
+        damp30
       )
       streakRef.current.position.y = THREE.MathUtils.lerp(
         streakRef.current.position.y,
         -mouseY * 0.6,
-        0.05
+        damp30
       )
       streakMaterial.opacity = (0.16 + (reduceMotion ? 0 : Math.sin(time * 1.8) * 0.08)) * speedMult
     }
 
     // Opacity fade in contact section
     const targetMidOpacity = isContact ? 0.02 : 0.20
-    midMaterial.opacity = THREE.MathUtils.lerp(midMaterial.opacity, targetMidOpacity, 0.06)
+    midMaterial.opacity = THREE.MathUtils.lerp(midMaterial.opacity, targetMidOpacity, damp36)
 
     const targetFgOpacity = isContact ? 0.01 : 0.26
-    fgMaterial.opacity = THREE.MathUtils.lerp(fgMaterial.opacity, targetFgOpacity, 0.06)
+    fgMaterial.opacity = THREE.MathUtils.lerp(fgMaterial.opacity, targetFgOpacity, damp36)
   })
 
   return (

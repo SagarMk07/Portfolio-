@@ -129,23 +129,26 @@ function DataStreamsComponent({
       }
     }
 
-    // Parallax response
+    // Parallax response with delta-scaled damping
+    const damp30 = 1 - Math.exp(-3.0 * delta)
+    const damp48 = 1 - Math.exp(-4.8 * delta)
+
     linesRef.current.position.x = THREE.MathUtils.lerp(
       linesRef.current.position.x,
       mouse.x * 0.18,
-      0.05
+      damp30
     )
     linesRef.current.position.y = THREE.MathUtils.lerp(
       linesRef.current.position.y,
       -mouse.y * 0.12,
-      0.05
+      damp30
     )
 
     // Opacity modulation per section
     let targetOpacity = 0.14
     if (activeSection === 'github') targetOpacity = 0.24
     if (activeSection === 'contact') targetOpacity = 0.01
-    material.opacity = THREE.MathUtils.lerp(material.opacity, targetOpacity, 0.08)
+    material.opacity = THREE.MathUtils.lerp(material.opacity, targetOpacity, damp48)
 
     posAttr.needsUpdate = true
   })

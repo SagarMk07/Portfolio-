@@ -12,39 +12,11 @@ interface AICoreProps {
   mouseRef: React.MutableRefObject<{ x: number; y: number }>
 }
 
-function AICoreComponent({
-  coreTransformRef,
-  position = [1.15, 0, 0],
-  scale = 1.25,
-  activeSection = 'hero',
-  activeProjectIndex = -1,
-  isHovered = false,
-  mouseRef,
-}: AICoreProps) {
-  // References
-  const rootGroupRef = useRef<THREE.Group>(null)
-  const exoRef = useRef<THREE.Mesh>(null)
-  const exoEdgesRef = useRef<THREE.LineSegments>(null)
-  const exoCageRef = useRef<THREE.LineSegments>(null)
-  const crystalCoreRef = useRef<THREE.Mesh>(null)
-  const crystalEdgesRef = useRef<THREE.LineSegments>(null)
-  const nucleusRef = useRef<THREE.Mesh>(null)
-  const pointLightRef = useRef<THREE.PointLight>(null)
+type AICoreMaterials = ReturnType<typeof useAICoreMaterials>
+type AICoreGeometries = ReturnType<typeof useAICoreGeometries>
 
-  // Orbital Ring References
-  const ring1GroupRef = useRef<THREE.Group>(null)
-  const ring2GroupRef = useRef<THREE.Group>(null)
-  const satellitesGroupRef = useRef<THREE.Group>(null)
-
-  // Interactive animated state refs (damped smoothly)
-  const proximityRef = useRef<number>(0)
-  const currentRingScaleRef = useRef<number>(1)
-  const currentEmissiveRef = useRef<number>(2.2)
-
-  // ----------------------------------------------------
-  // MATERIALS: Studio PBR titanium, faceted gunmetal, & acid-lime emission
-  // ----------------------------------------------------
-  const materials = useMemo(() => {
+function useAICoreMaterials() {
+  return useMemo(() => {
     // 1. Outer Dark Titanium Shell (translucent faceted sheen reveals inner quantum core)
     const exoskeleton = new THREE.MeshStandardMaterial({
       color: '#1a2217',
@@ -133,11 +105,10 @@ function AICoreComponent({
       nucleus,
     }
   }, [])
+}
 
-  // ----------------------------------------------------
-  // GEOMETRIES: Polyhedral monolith, aerospace gimbals, & telemetry ticks
-  // ----------------------------------------------------
-  const geometries = useMemo(() => {
+function useAICoreGeometries() {
+  return useMemo(() => {
     // Outer Shell (radius 1.45)
     const exoGeo = new THREE.IcosahedronGeometry(1.45, 0)
     const exoEdges = new THREE.EdgesGeometry(exoGeo)
@@ -148,7 +119,6 @@ function AICoreComponent({
     // Two Aerospace Rings (Ring 1: radius 2.05, Ring 2: radius 2.42)
     const ring1Geo = new THREE.TorusGeometry(2.05, 0.022, 16, 96)
     const ring2Geo = new THREE.TorusGeometry(2.42, 0.018, 16, 96)
-    // Reuse cornerNodeGeo sphere geometry for satellites to reduce buffer allocations
     const satGeo = cornerNodeGeo
 
     // Aerospace Caliber Tick Marks along Ring 1
@@ -182,6 +152,29 @@ function AICoreComponent({
     const crystalEdges = new THREE.EdgesGeometry(crystalGeo)
     const nucleusGeo = new THREE.OctahedronGeometry(0.48, 0)
 
+    // Corner coordinates extracted from exoskeleton vertices
+    const posAttr = exoGeo.attributes.position
+    const cornerPositions: [number, number, number][] = []
+    const seen = new Set<string>()
+
+    for (let i = 0; i < posAttr.count; i++) {
+      const x = Number(posAttr.getX(i).toFixed(3))
+      const y = Number(posAttr.getY(i).toFixed(3))
+      const z = Number(posAttr.getZ(i).toFixed(3))
+      const key = `${x},${y},${z}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        cornerPositions.push([x, y, z])
+      }
+    }
+
+    // 8 Satellite orbital coordinates along Ring 2
+    const satellitePositions: [number, number, number][] = []
+    for (let i = 0; i < satCount; i++) {
+      const angle = (i / satCount) * Math.PI * 2
+      satellitePositions.push([Math.cos(angle) * r2, Math.sin(angle) * r2, 0])
+    }
+
     return {
       exoGeo,
       exoEdges,
@@ -196,45 +189,179 @@ function AICoreComponent({
       crystalGeo,
       crystalEdges,
       nucleusGeo,
+      cornerPositions,
+      satellitePositions,
     }
   }, [])
+}
 
-  // Corner coordinates extracted from exoskeleton vertices
-  const cornerPositions = useMemo(() => {
-    const posAttr = geometries.exoGeo.attributes.position
-    const points: [number, number, number][] = []
-    const seen = new Set<string>()
+function ExoskeletonShell({
+  exoRef,
+  exoEdgesRef,
+  exoCageRef,
+  geometries,
+  materials,
+}: {
+  exoRef: React.RefObject<THREE.Mesh | null>
+  exoEdgesRef: React.RefObject<THREE.LineSegments | null>
+  exoCageRef: React.RefObject<THREE.LineSegments | null>
+  geometries: AICoreGeometries
+  materials: AICoreMaterials
+}) {
+  return (
+    <>
+      <mesh
+        ref={exoRef}
+        geometry={geometries.exoGeo}
+        material={materials.exoskeleton}
+        castShadow
+        receiveShadow
+      >
+        {geometries.cornerPositions.map((pos) => (
+          <mesh
+            key={`node-${pos[0]}_${pos[1]}_${pos[2]}`}
+            position={pos}
+            geometry={geometries.cornerNodeGeo}
+            material={materials.cornerNode}
+          />
+        ))}
+      </mesh>
 
-    for (let i = 0; i < posAttr.count; i++) {
-      const x = Number(posAttr.getX(i).toFixed(3))
-      const y = Number(posAttr.getY(i).toFixed(3))
-      const z = Number(posAttr.getZ(i).toFixed(3))
-      const key = `${x},${y},${z}`
-      if (!seen.has(key)) {
-        seen.add(key)
-        points.push([x, y, z])
-      }
-    }
-    return points
-  }, [geometries.exoGeo])
+      <lineSegments
+        ref={exoEdgesRef}
+        geometry={geometries.exoEdges}
+        material={materials.exoskeletonEdges}
+      />
 
-  // 8 Satellite orbital coordinates along Ring 2
-  const satellitePositions = useMemo(() => {
-    const count = 8
-    const points: [number, number, number][] = []
-    const r = 2.42
-    for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 2
-      points.push([Math.cos(angle) * r, Math.sin(angle) * r, 0])
-    }
-    return points
-  }, [])
+      <lineSegments
+        ref={exoCageRef}
+        geometry={geometries.exoCageGeo}
+        material={materials.exoskeletonCage}
+      />
+    </>
+  )
+}
 
-  // ----------------------------------------------------
-  // FRAME ANIMATION & PHYSICAL PROXIMITY INTERPOLATION
-  // ----------------------------------------------------
+function OrbitalGimbalRings({
+  ring1GroupRef,
+  ring2GroupRef,
+  satellitesGroupRef,
+  geometries,
+  materials,
+}: {
+  ring1GroupRef: React.RefObject<THREE.Group | null>
+  ring2GroupRef: React.RefObject<THREE.Group | null>
+  satellitesGroupRef: React.RefObject<THREE.Group | null>
+  geometries: AICoreGeometries
+  materials: AICoreMaterials
+}) {
+  return (
+    <>
+      <group ref={ring1GroupRef}>
+        <mesh geometry={geometries.ring1Geo} material={materials.ringMat} />
+        <lineSegments geometry={geometries.ticksGeo} material={materials.tickMat} />
+        <mesh position={[2.05, 0, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
+        <mesh position={[-2.05, 0, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
+        <mesh position={[0, 2.05, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
+        <mesh position={[0, -2.05, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
+      </group>
+
+      <group ref={ring2GroupRef} rotation={[Math.PI / 4, 0, Math.PI / 6]}>
+        <mesh geometry={geometries.ring2Geo} material={materials.ringMat} />
+        <lineSegments geometry={geometries.beamsGeo} material={materials.telemetryBeamMat} />
+        <group ref={satellitesGroupRef}>
+          {geometries.satellitePositions.map((pos) => (
+            <mesh
+              key={`sat-${pos[0]}_${pos[1]}_${pos[2]}`}
+              position={pos}
+              geometry={geometries.satGeo}
+              material={materials.satelliteMat}
+            />
+          ))}
+        </group>
+      </group>
+    </>
+  )
+}
+
+function QuantumCoreNucleus({
+  crystalCoreRef,
+  crystalEdgesRef,
+  nucleusRef,
+  pointLightRef,
+  geometries,
+  materials,
+}: {
+  crystalCoreRef: React.RefObject<THREE.Mesh | null>
+  crystalEdgesRef: React.RefObject<THREE.LineSegments | null>
+  nucleusRef: React.RefObject<THREE.Mesh | null>
+  pointLightRef: React.RefObject<THREE.PointLight | null>
+  geometries: AICoreGeometries
+  materials: AICoreMaterials
+}) {
+  return (
+    <>
+      <mesh
+        ref={crystalCoreRef}
+        geometry={geometries.crystalGeo}
+        material={materials.crystal}
+      />
+      <lineSegments
+        ref={crystalEdgesRef}
+        geometry={geometries.crystalEdges}
+        material={materials.crystalEdgesMat}
+      />
+      <mesh
+        ref={nucleusRef}
+        geometry={geometries.nucleusGeo}
+        material={materials.nucleus}
+      />
+      <pointLight
+        ref={pointLightRef}
+        color="#c7ff3d"
+        intensity={2.5}
+        distance={9}
+        decay={2}
+      />
+    </>
+  )
+}
+
+function AICoreComponent({
+  coreTransformRef,
+  position = [1.15, 0, 0],
+  scale = 1.25,
+  activeSection = 'hero',
+  activeProjectIndex = -1,
+  isHovered = false,
+  mouseRef,
+}: AICoreProps) {
+  // References
+  const rootGroupRef = useRef<THREE.Group>(null)
+  const exoRef = useRef<THREE.Mesh>(null)
+  const exoEdgesRef = useRef<THREE.LineSegments>(null)
+  const exoCageRef = useRef<THREE.LineSegments>(null)
+  const crystalCoreRef = useRef<THREE.Mesh>(null)
+  const crystalEdgesRef = useRef<THREE.LineSegments>(null)
+  const nucleusRef = useRef<THREE.Mesh>(null)
+  const pointLightRef = useRef<THREE.PointLight>(null)
+
+  // Orbital Ring References
+  const ring1GroupRef = useRef<THREE.Group>(null)
+  const ring2GroupRef = useRef<THREE.Group>(null)
+  const satellitesGroupRef = useRef<THREE.Group>(null)
+
+  // Interactive animated state refs (damped smoothly)
+  const proximityRef = useRef<number>(0)
+  const currentRingScaleRef = useRef<number>(1)
+  const currentEmissiveRef = useRef<number>(2.2)
+
+  const materials = useAICoreMaterials()
+  const geometries = useAICoreGeometries()
+
+  // Frame animation loop with delta-scaled damping
   useFrame((state, delta) => {
-    const time = state.clock.getElapsedTime()
+    const time = state.clock.elapsedTime
     const mouse = mouseRef.current
     const isContact = activeSection === 'contact'
     const contactDamping = isContact ? 0.04 : 1.0
@@ -250,8 +377,13 @@ function AICoreComponent({
     const distSq = (mouse.x - coreScreenX) ** 2 + (mouse.y - coreScreenY) ** 2
     const targetProximity = (isHovered || distSq < 0.35) && !reduceMotion ? Math.max(0, 1 - Math.sqrt(distSq) / 0.8) : 0
 
+    // Frame-rate independent exponential damping factors
+    const damp3 = 1 - Math.exp(-3.0 * delta)
+    const damp36 = 1 - Math.exp(-3.6 * delta)
+    const damp48 = 1 - Math.exp(-4.8 * delta)
+
     // Smoothly damp proximity factor
-    proximityRef.current = THREE.MathUtils.lerp(proximityRef.current, targetProximity, 0.05)
+    proximityRef.current = THREE.MathUtils.lerp(proximityRef.current, targetProximity, damp3)
     const prox = proximityRef.current
 
     // 1. Root group gentle physical levitation and mouse tilt
@@ -263,24 +395,24 @@ function AICoreComponent({
       rootGroupRef.current.position.y = THREE.MathUtils.lerp(
         rootGroupRef.current.position.y,
         targetPos[1] + floatY,
-        0.06
+        damp36
       )
       rootGroupRef.current.position.x = THREE.MathUtils.lerp(
         rootGroupRef.current.position.x,
         targetPos[0] + mouseOffsetX,
-        0.05
+        damp3
       )
       rootGroupRef.current.position.z = THREE.MathUtils.lerp(
         rootGroupRef.current.position.z,
         targetPos[2] + mouseOffsetZ,
-        0.06
+        damp36
       )
 
       // Damped mechanical angular tilt (never raw coordinates)
       const targetRotX = reduceMotion ? 0 : mouse.y * 0.16 * contactDamping
       const targetRotY = reduceMotion ? 0 : mouse.x * 0.22 * contactDamping
-      rootGroupRef.current.rotation.x = THREE.MathUtils.lerp(rootGroupRef.current.rotation.x, targetRotX, 0.05)
-      rootGroupRef.current.rotation.y = THREE.MathUtils.lerp(rootGroupRef.current.rotation.y, targetRotY, 0.05)
+      rootGroupRef.current.rotation.x = THREE.MathUtils.lerp(rootGroupRef.current.rotation.x, targetRotX, damp3)
+      rootGroupRef.current.rotation.y = THREE.MathUtils.lerp(rootGroupRef.current.rotation.y, targetRotY, damp3)
 
       // Section scale transitions
       let targetScale = targetBaseScale
@@ -292,7 +424,7 @@ function AICoreComponent({
         targetScale = targetBaseScale * 0.88
       }
       rootGroupRef.current.scale.setScalar(
-        THREE.MathUtils.lerp(rootGroupRef.current.scale.x, targetScale, 0.06)
+        THREE.MathUtils.lerp(rootGroupRef.current.scale.x, targetScale, damp36)
       )
     }
 
@@ -337,7 +469,7 @@ function AICoreComponent({
     currentRingScaleRef.current = THREE.MathUtils.lerp(
       currentRingScaleRef.current,
       targetRingScale,
-      0.06
+      damp36
     )
 
     if (ring1GroupRef.current) {
@@ -376,7 +508,7 @@ function AICoreComponent({
     currentEmissiveRef.current = THREE.MathUtils.lerp(
       currentEmissiveRef.current,
       targetEmissive,
-      0.08
+      damp48
     )
     materials.nucleus.emissiveIntensity = currentEmissiveRef.current
 
@@ -394,88 +526,27 @@ function AICoreComponent({
 
   return (
     <group ref={rootGroupRef} position={position}>
-      {/* 1. OUTER STRUCTURE: Dark Titanium Polyhedral Shell */}
-      <mesh
-        ref={exoRef}
-        geometry={geometries.exoGeo}
-        material={materials.exoskeleton}
-        castShadow
-        receiveShadow
-      >
-        {cornerPositions.map((pos, idx) => (
-          <mesh
-            key={idx}
-            position={pos}
-            geometry={geometries.cornerNodeGeo}
-            material={materials.cornerNode}
-          />
-        ))}
-      </mesh>
-
-      {/* Structural Beveled Edges */}
-      <lineSegments
-        ref={exoEdgesRef}
-        geometry={geometries.exoEdges}
-        material={materials.exoskeletonEdges}
+      <ExoskeletonShell
+        exoRef={exoRef}
+        exoEdgesRef={exoEdgesRef}
+        exoCageRef={exoCageRef}
+        geometries={geometries}
+        materials={materials}
       />
-
-      {/* Structural Concentric Exoskeleton Armature Cage */}
-      <lineSegments
-        ref={exoCageRef}
-        geometry={geometries.exoCageGeo}
-        material={materials.exoskeletonCage}
+      <OrbitalGimbalRings
+        ring1GroupRef={ring1GroupRef}
+        ring2GroupRef={ring2GroupRef}
+        satellitesGroupRef={satellitesGroupRef}
+        geometries={geometries}
+        materials={materials}
       />
-
-      {/* 2. MIDDLE STRUCTURE: Two Independent Orbital Mechanical Rings */}
-      {/* Ring 1 (Pitch/Yaw with aerospace caliber ticks & mechanical bracket mounts) */}
-      <group ref={ring1GroupRef}>
-        <mesh geometry={geometries.ring1Geo} material={materials.ringMat} />
-        <lineSegments geometry={geometries.ticksGeo} material={materials.tickMat} />
-        <mesh position={[2.05, 0, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
-        <mesh position={[-2.05, 0, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
-        <mesh position={[0, 2.05, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
-        <mesh position={[0, -2.05, 0]} geometry={geometries.bracketGeo} material={materials.ringMat} />
-      </group>
-
-      {/* Ring 2 (Angled roll with 8 satellites & telemetry laser vectors) */}
-      <group ref={ring2GroupRef} rotation={[Math.PI / 4, 0, Math.PI / 6]}>
-        <mesh geometry={geometries.ring2Geo} material={materials.ringMat} />
-        <lineSegments geometry={geometries.beamsGeo} material={materials.telemetryBeamMat} />
-        <group ref={satellitesGroupRef}>
-          {satellitePositions.map((pos, idx) => (
-            <mesh
-              key={idx}
-              position={pos}
-              geometry={geometries.satGeo}
-              material={materials.satelliteMat}
-            />
-          ))}
-        </group>
-      </group>
-
-      {/* 3. INNER NUCLEUS: Crystalline Octahedron & Pulsing Emissive Core */}
-      <mesh
-        ref={crystalCoreRef}
-        geometry={geometries.crystalGeo}
-        material={materials.crystal}
-      />
-      <lineSegments
-        ref={crystalEdgesRef}
-        geometry={geometries.crystalEdges}
-        material={materials.crystalEdgesMat}
-      />
-
-      <mesh
-        ref={nucleusRef}
-        geometry={geometries.nucleusGeo}
-        material={materials.nucleus}
-      />
-      <pointLight
-        ref={pointLightRef}
-        color="#c7ff3d"
-        intensity={2.5}
-        distance={9}
-        decay={2}
+      <QuantumCoreNucleus
+        crystalCoreRef={crystalCoreRef}
+        crystalEdgesRef={crystalEdgesRef}
+        nucleusRef={nucleusRef}
+        pointLightRef={pointLightRef}
+        geometries={geometries}
+        materials={materials}
       />
     </group>
   )

@@ -27,13 +27,19 @@ export function ResumeModal({ isOpen, onClose }: ResumeModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="resume-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="resume-title">
+        <dialog className="resume-modal-overlay" open aria-labelledby="resume-title">
           <motion.div
             className="resume-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            role="button"
+            tabIndex={0}
+            aria-label="Close resume modal backdrop"
             onClick={onClose}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') onClose()
+            }}
           />
 
           <motion.div
@@ -171,7 +177,7 @@ export function ResumeModal({ isOpen, onClose }: ResumeModalProps) {
               </footer>
             </article>
           </motion.div>
-        </div>
+        </dialog>
       )}
     </AnimatePresence>
   )

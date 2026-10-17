@@ -60,17 +60,20 @@ export function ParticleField({ count = 95, visible = true, activeSection = 'her
     // In contact section, dust decelerates to near standstill
     const speedMultiplier = activeSection === 'contact' ? 0.08 : 1.0
 
-    // Ultra-slow ambient atmospheric drift
+    // Ultra-slow ambient atmospheric drift with delta-scaled damping
+    const damp30 = 1 - Math.exp(-3.0 * delta)
+    const damp48 = 1 - Math.exp(-4.8 * delta)
+
     pointsRef.current.rotation.y += delta * 0.018 * speedMultiplier
     pointsRef.current.rotation.x = THREE.MathUtils.lerp(
       pointsRef.current.rotation.x,
       mouse.y * 0.04,
-      0.05
+      damp30
     )
 
     // Visibility transition
     const targetOpacity = visible && activeSection !== 'contact' ? 0.22 : 0.02
-    material.opacity = THREE.MathUtils.lerp(material.opacity, targetOpacity, 0.08)
+    material.opacity = THREE.MathUtils.lerp(material.opacity, targetOpacity, damp48)
   })
 
   return <points ref={pointsRef} geometry={geometry} material={material} />

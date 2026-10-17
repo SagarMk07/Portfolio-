@@ -97,7 +97,6 @@ export function Navigation() {
   }, [location.pathname])
 
   useEffect(() => {
-    if (open) menuButtonRef.current?.focus()
     setOpen(false)
   }, [location.pathname, location.hash])
 

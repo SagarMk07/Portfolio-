@@ -12,7 +12,7 @@ export interface TechNodeData {
   info: string
 }
 
-export const techNodes: TechNodeData[] = [
+const techNodes: TechNodeData[] = [
   // 1. Relational Chain 1: PYTHON -> AI / ML -> FASTAPI -> POSTGRESQL / SUPABASE
   {
     id: 'python',
@@ -195,8 +195,6 @@ function NeuralNetworkComponent({
   onHoverNode,
   mouseRef,
 }: NeuralNetworkProps) {
-  if (!visible) return null
-
   const groupRef = useRef<THREE.Group>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
 
@@ -262,26 +260,36 @@ function NeuralNetworkComponent({
     }
   }, [])
 
-  useFrame((state) => {
-    if (!groupRef.current) return
-    const time = state.clock.getElapsedTime()
+  useFrame((state, delta) => {
+    if (!groupRef.current || !visible) return
+    const time = state.clock.elapsedTime
     const mouse = mouseRef.current
 
-    // Subtle 3D spatial rotation response to mouse
+    // Subtle 3D spatial rotation response to mouse with delta-independent damping
+    const rotDamp = 1 - Math.exp(-3.0 * delta)
     groupRef.current.rotation.y = THREE.MathUtils.lerp(
       groupRef.current.rotation.y,
       Math.sin(time * 0.18) * 0.08 + mouse.x * 0.28,
-      0.05
+      rotDamp
     )
     groupRef.current.rotation.x = THREE.MathUtils.lerp(
       groupRef.current.rotation.x,
       Math.cos(time * 0.22) * 0.05 - mouse.y * 0.18,
-      0.05
+      rotDamp
     )
   })
 
   // Project 02 (SmartShopper Guardian): Highlights Frontend & Extension cluster
   const project2Cluster = useMemo(() => new Set(['frontend-core', 'typescript', 'react', 'rest-apis']), [])
+
+  // Fast O(1) Set lookup for connections to hovered node
+  const hoveredConnections = useMemo(() => {
+    if (!hoveredId) return null
+    const node = nodeMap.get(hoveredId)
+    return new Set(node?.connections || [])
+  }, [hoveredId, nodeMap])
+
+  if (!visible) return null
 
   return (
     <group ref={groupRef} position={[0, 0, -0.5]}>
@@ -298,7 +306,7 @@ function NeuralNetworkComponent({
 
         return (
           <lineSegments
-            key={idx}
+            key={`link-${line.idA}--${line.idB}`}
             geometry={lineGeometries[idx]}
             material={mat}
           />
@@ -309,9 +317,10 @@ function NeuralNetworkComponent({
       {techNodes.map((node) => {
         const isHovered = hoveredId === node.id
         const isConnected =
-          hoveredId &&
-          (nodeMap.get(hoveredId)?.connections.includes(node.id) ||
-            node.connections.includes(hoveredId))
+          Boolean(hoveredId && (
+            hoveredConnections?.has(node.id) ||
+            node.connections.includes(hoveredId)
+          ))
 
         const isProject2Active = activeProjectIndex === 1 && project2Cluster.has(node.id)
 

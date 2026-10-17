@@ -58,6 +58,7 @@ export function PortfolioScene({
   // Mutable refs to eliminate React re-renders on animation and scroll loops
   const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
   const scrollProgressRef = useRef<number>(0)
+  const activeSectionRef = useRef<string>('hero')
   const coreTransformRef = useRef<{
     position: [number, number, number]
     scale: number
@@ -72,6 +73,13 @@ export function PortfolioScene({
       onWebGLReadyChange?.(true)
     }
   }
+
+  // Proactively prefetch heavy 3D Neural constellation when user approaches Section 04/05
+  useEffect(() => {
+    if (activeSection === 'about' || activeSection === 'build-log') {
+      import('./NeuralNetwork')
+    }
+  }, [activeSection])
 
   useEffect(() => {
     let frameId = 0
@@ -115,13 +123,11 @@ export function PortfolioScene({
           current = 'contact'
         }
 
-        setActiveSection((prev) => {
-          if (prev !== current) {
-            onActiveSectionChange?.(current)
-            return current
-          }
-          return prev
-        })
+        if (activeSectionRef.current !== current) {
+          activeSectionRef.current = current
+          setActiveSection(current)
+          onActiveSectionChange?.(current)
+        }
       })
     }
 
@@ -173,6 +179,8 @@ export function PortfolioScene({
             antialias: true,
             alpha: true,
             powerPreference: 'high-performance',
+            stencil: false,
+            depth: true,
           }}
           dpr={[1, typeof window !== 'undefined' && window.innerWidth < 768 ? 1.25 : 1.75]}
         >

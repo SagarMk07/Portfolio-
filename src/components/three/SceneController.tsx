@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import * as THREE from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
 
@@ -18,9 +18,9 @@ export function SceneController({
   coreTransformRef,
 }: SceneControllerProps) {
   const { camera } = useThree()
-  const targetCamPos = useRef(new THREE.Vector3(0, 0.4, 6.8))
-  const targetLookAt = useRef(new THREE.Vector3(0.35, 0.05, 0))
-  const currentLookAt = useRef(new THREE.Vector3(0.35, 0.05, 0))
+  const targetCamPos = useMemo(() => new THREE.Vector3(0, 0.4, 6.8), [])
+  const targetLookAt = useMemo(() => new THREE.Vector3(0.35, 0.05, 0), [])
+  const currentLookAt = useMemo(() => new THREE.Vector3(0.35, 0.05, 0), [])
   const lastScrollProgress = useRef(scrollProgressRef.current)
   const scrollVelocity = useRef(0)
   const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -40,7 +40,8 @@ export function SceneController({
     const currentProgress = scrollProgressRef.current
     const rawVelocity = (currentProgress - lastScrollProgress.current) / Math.max(delta, 0.001)
     lastScrollProgress.current = currentProgress
-    scrollVelocity.current = THREE.MathUtils.lerp(scrollVelocity.current, rawVelocity, 0.08)
+    const velDamp = 1 - Math.exp(-5.0 * delta)
+    scrollVelocity.current = THREE.MathUtils.lerp(scrollVelocity.current, rawVelocity, velDamp)
 
     // Base coordinates
     let camX = 0
@@ -185,17 +186,18 @@ export function SceneController({
     const clampedMouseX = reduceMotion ? 0 : Math.max(-1, Math.min(1, mouse.x)) * (isMobile ? 0.02 : 0.08)
     const clampedMouseY = reduceMotion ? 0 : Math.max(-1, Math.min(1, mouse.y)) * (isMobile ? 0.015 : 0.05)
 
-    targetCamPos.current.set(
+    targetCamPos.set(
       camX + clampedMouseX,
       camY - clampedMouseY,
       camZ
     )
-    targetLookAt.current.set(lookX, lookY, lookZ)
+    targetLookAt.set(lookX, lookY, lookZ)
 
-    // Smooth weighted interpolation with damping factor 0.045
-    camera.position.lerp(targetCamPos.current, 0.045)
-    currentLookAt.current.lerp(targetLookAt.current, 0.045)
-    camera.lookAt(currentLookAt.current)
+    // Smooth weighted interpolation with frame-rate independent damping
+    const camDamp = 1 - Math.exp(-2.8 * delta)
+    camera.position.lerp(targetCamPos, camDamp)
+    currentLookAt.lerp(targetLookAt, camDamp)
+    camera.lookAt(currentLookAt)
   })
 
   return null
