@@ -163,9 +163,32 @@ function Hero({ onOpenResume }: { onOpenResume: () => void }) {
           </motion.div>
         </div>
 
-        {/* CENTER / RIGHT: 3D Spatial Framing where the large AI Core physically lives */}
+        {/* CENTER / RIGHT: 3D Spatial Chamber - Physically integrating the AI Core into the UI */}
         <div className="hero-poster-center" aria-hidden="true">
-          <div className="hero-spatial-target" />
+          <div className="hero-spatial-chamber">
+            <span className="chamber-bracket chamber-bracket-tl">┌</span>
+            <span className="chamber-bracket chamber-bracket-tr">┐</span>
+            <span className="chamber-bracket chamber-bracket-bl">└</span>
+            <span className="chamber-bracket chamber-bracket-br">┘</span>
+            
+            <div className="chamber-header">
+              <span className="chamber-tag">{'OPTICAL_TARGET // 01'}</span>
+              <span className="chamber-coord">{'12°58′N · 77°35′E'}</span>
+            </div>
+
+            <div className="chamber-reticle">
+              <div className="reticle-ring" />
+              <div className="reticle-crosshair-h" />
+              <div className="reticle-crosshair-v" />
+            </div>
+
+            <div className="chamber-footer">
+              <span className="chamber-status">
+                <i className="status-pip-mini" /> {'AI_CORE // ONLINE'}
+              </span>
+              <span className="chamber-spec">{'ORBITAL // 60 FPS'}</span>
+            </div>
+          </div>
         </div>
 
         {/* RIGHT: Sleek, Non-Card Technical Info Block */}
@@ -349,28 +372,31 @@ function About() {
             </p>
           </ScrollReveal>
 
-          {/* Technical Capability Modules */}
+          {/* Technical Capability Modules - System Component Structure */}
           <div className="about-capabilities-list">
             <div className="capability-card">
-              <div className="capability-num">01</div>
-              <div className="capability-info">
-                <strong>01 INTELLIGENCE</strong>
-                <p>Foundational machine learning, predictive modeling, vector embeddings, and generative reasoning workflows.</p>
+              <div className="capability-header">
+                <span className="capability-code">{'SYS_CAP // 01'}</span>
+                <span className="capability-status"><i /> VERIFIED</span>
               </div>
+              <strong className="capability-title">{'01 // INTELLIGENCE'}</strong>
+              <p>Foundational machine learning, predictive modeling, vector embeddings, and generative reasoning workflows.</p>
             </div>
             <div className="capability-card">
-              <div className="capability-num">02</div>
-              <div className="capability-info">
-                <strong>02 SYSTEMS</strong>
-                <p>High-throughput backend endpoints, asynchronous queue architectures, resilient database schemas, and microservice APIs.</p>
+              <div className="capability-header">
+                <span className="capability-code">{'SYS_CAP // 02'}</span>
+                <span className="capability-status"><i /> VERIFIED</span>
               </div>
+              <strong className="capability-title">{'02 // SYSTEMS'}</strong>
+              <p>High-throughput backend endpoints, asynchronous queue architectures, resilient database schemas, and microservice APIs.</p>
             </div>
             <div className="capability-card">
-              <div className="capability-num">03</div>
-              <div className="capability-info">
-                <strong>03 INTERFACES</strong>
-                <p>Pixel-precise interactive web experiences, real-time WebGL/Three.js computational environments, and strict type safety.</p>
+              <div className="capability-header">
+                <span className="capability-code">{'SYS_CAP // 03'}</span>
+                <span className="capability-status"><i /> VERIFIED</span>
               </div>
+              <strong className="capability-title">{'03 // INTERFACES'}</strong>
+              <p>Pixel-precise interactive web experiences, real-time WebGL/Three.js computational environments, and strict type safety.</p>
             </div>
           </div>
         </div>

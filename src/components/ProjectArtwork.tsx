@@ -10,7 +10,7 @@ function MockupFrame({ brand, children }: { brand: string; children: React.React
 function MedicalMockup() {
   return <MockupFrame brand="MEDASSIST / ASSISTANT"><div className="mockup-medical">
     <aside className="mockup-rail"><b>+</b><i/><i/><i/><i/></aside>
-    <div className="mockup-main"><div className="mockup-overline">HEALTH ASSISTANT / CONCEPT</div><strong>What would you like help with?</strong><p>Share a question or add a document for text recognition.</p><div className="mockup-input">Describe your concern <span>↗</span></div><div className="mockup-upload"><span>↥</span><div><b>ADD A DOCUMENT</b><small>OCR INPUT / PRESENTATION ONLY</small></div></div></div>
+    <div className="mockup-main"><div className="mockup-overline">HEALTH ASSISTANT / CONCEPT</div><strong>What would you like help with?</strong><p>Share a question or add a document for health context.</p><div className="mockup-input">Describe your concern <span>↗</span></div><div className="mockup-upload"><span>↥</span><div><b>ADD A DOCUMENT</b><small>DOC INPUT / PRESENTATION ONLY</small></div></div></div>
     <div className="mockup-aside"><span className="mockup-overline">YOUR SESSION</span><div className="mockup-placeholder-line"/><div className="mockup-placeholder-line short"/><div className="mockup-disclaimer">For informational support<br/>Not a diagnosis</div></div>
   </div></MockupFrame>
 }

@@ -94,6 +94,14 @@ export function InteractiveStack() {
 
   return (
     <div className="interactive-stack">
+      {/* System Control Panel Top Bar */}
+      <div className="stack-control-bar">
+        <span className="control-bar-tag">{'BUS_SELECTOR // SYSTEM_STACK_MATRIX'}</span>
+        <span className="control-bar-status">
+          <i /> 5 DOMAINS ACTIVE
+        </span>
+      </div>
+
       {/* Category selector strip */}
       <div className="stack-matrix-nav" role="tablist" aria-label="Technology domains">
         {categories.map((cat) => {
@@ -154,15 +162,18 @@ export function InteractiveStack() {
                 className="matrix-tech-card"
                 initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                whileHover={reduceMotion ? undefined : { y: -3, transition: { duration: 0.2 } }}
+                whileHover={reduceMotion ? undefined : { y: -2, transition: { duration: 0.2 } }}
                 transition={{ duration: 0.22, delay: idx * 0.03, ease: cinematicEase }}
               >
                 <div className="tech-card-header">
-                  <span className="tech-index">0{idx + 1}</span>
-                  <ArrowUpRight className="tech-arrow" size={13} />
+                  <span className="tech-index">{`0${idx + 1} // TECH`}</span>
+                  <span className="tech-pip-indicator" aria-hidden="true" />
                 </div>
                 <strong className="tech-name">{tech}</strong>
-                <span className="tech-badge">VERIFIED STACK</span>
+                <div className="tech-card-footer">
+                  <span className="tech-badge">STATUS: ACTIVE</span>
+                  <ArrowUpRight className="tech-arrow" size={12} />
+                </div>
               </motion.div>
             ))}
           </motion.div>

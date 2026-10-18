@@ -101,7 +101,7 @@ export function ResumeModal({ isOpen, onClose }: ResumeModalProps) {
                 <h3 className="resume-section-heading">01 / EXECUTIVE PROFILE</h3>
                 <p className="resume-text">
                   AI &amp; Machine Learning developer with strong foundations in neural architectures,
-                  computer vision, and full-stack software systems. Experienced in designing end-to-end
+                  predictive modeling, and full-stack software systems. Experienced in designing end-to-end
                   intelligent products that connect machine learning models, reactive web interfaces, and
                   production datastores.
                 </p>
@@ -117,7 +117,7 @@ export function ResumeModal({ isOpen, onClose }: ResumeModalProps) {
                   </div>
                   <span className="resume-subtext">Bangalore, Karnataka, India</span>
                   <p className="resume-text">
-                    Core Focus: Neural Networks, Machine Learning, Computer Vision, Data Structures &amp;
+                    Core Focus: Neural Networks, Machine Learning, Computational Systems, Data Structures &amp;
                     Algorithms, Systems Engineering.
                   </p>
                 </div>

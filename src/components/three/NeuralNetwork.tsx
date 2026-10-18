@@ -27,7 +27,7 @@ const techNodes: TechNodeData[] = [
     name: 'AI / ML',
     category: 'ai',
     position: [-2.0, 1.8, 0.6],
-    connections: ['python', 'fastapi', 'ml', 'vision', 'genai'],
+    connections: ['python', 'fastapi', 'ml', 'ai-apis', 'genai'],
     info: 'Neural architectures, multimodal processing, and automated reasoning engines.',
   },
   {
@@ -35,16 +35,16 @@ const techNodes: TechNodeData[] = [
     name: 'Machine Learning',
     category: 'ai',
     position: [-2.6, 2.8, -0.4],
-    connections: ['ai-core', 'python', 'vision'],
+    connections: ['ai-core', 'python', 'ai-apis'],
     info: 'Supervised, unsupervised, and recommendation models for real-world telemetry.',
   },
   {
-    id: 'vision',
-    name: 'Computer Vision',
+    id: 'ai-apis',
+    name: 'AI APIs',
     category: 'ai',
     position: [-1.2, 3.0, 0.2],
     connections: ['ai-core', 'ml'],
-    info: 'OCR, document feature extraction, and real-time visual parsing.',
+    info: 'Integration with multimodal reasoning endpoints, LLM inference, and API architectures.',
   },
   {
     id: 'genai',
@@ -52,7 +52,7 @@ const techNodes: TechNodeData[] = [
     category: 'ai',
     position: [-0.4, 2.2, 0.8],
     connections: ['ai-core', 'fastapi', 'frontend-core'],
-    info: 'Gemini, Vertex AI, and prompt/vector-assisted workflows.',
+    info: 'Multimodal reasoning, LLM pipelines, and prompt/vector-assisted workflows.',
   },
   {
     id: 'fastapi',
@@ -178,7 +178,7 @@ const techNodes: TechNodeData[] = [
     category: 'data',
     position: [3.4, -2.6, 0.3],
     connections: ['cloud-core'],
-    info: 'NoSQL Firestore datastores, authentication, and serverless hosting.',
+    info: 'Managed cloud database systems, authentication, and serverless hosting.',
   },
 ]
 

@@ -55,17 +55,23 @@ export function ProjectRow({
           <span>{`${project.number} // ARCHIVE`}</span>
         </div>
         <div className="case-strip-col case-strip-name">
+          <span className="case-strip-micro-label">DESIGNATION</span>
           <strong>{project.title}</strong>
         </div>
         <div className="case-strip-col case-strip-category">
+          <span className="case-strip-micro-label">DOMAIN</span>
           <span>{project.category}</span>
         </div>
         <div className="case-strip-col case-strip-stack">
-          {project.technologies.slice(0, 3).map(tech => (
-            <span key={tech} className="case-strip-pill">{tech}</span>
-          ))}
+          <span className="case-strip-micro-label">STACK</span>
+          <div className="case-strip-pills">
+            {project.technologies.slice(0, 3).map(tech => (
+              <span key={tech} className="case-strip-pill">{tech}</span>
+            ))}
+          </div>
         </div>
         <div className="case-strip-col case-strip-year">
+          <span className="case-strip-micro-label">CYCLE</span>
           <span>{project.year || '2025'}</span>
         </div>
         <div className="case-strip-col case-strip-action">
@@ -79,8 +85,8 @@ export function ProjectRow({
       <div className="project-body-grid">
         <motion.div className="project-copy" variants={staggerVariants}>
           <motion.div className="project-meta" variants={revealItemVariants}>
-            <span className="project-number-badge">{'SYSTEM // SPECIFICATION'}</span>
-            <span className="project-category-tag">[VERIFIED CASE STUDY]</span>
+            <span className="project-number-badge">{`SYSTEM // DOSSIER_${project.number}`}</span>
+            <span className="project-category-tag">[VERIFIED ARCHITECTURE]</span>
           </motion.div>
 
           <MotionLink
@@ -143,8 +149,8 @@ export function ProjectRow({
               <ArrowUpRight size={18} />
             </span>
             <div className="art-stage-telemetry">
-              <span>FILE // {project.slug.toUpperCase()}</span>
-              <span>VERIFIED CONCEPT</span>
+              <span>{`FILE // ${project.slug.toUpperCase()}`}</span>
+              <span>STATUS: VERIFIED</span>
             </div>
           </div>
         </MotionLink>
