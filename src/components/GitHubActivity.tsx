@@ -224,47 +224,63 @@ export function GitHubActivity() {
           <Github size={18} /> <span>@SagarMk07</span><ArrowUpRight size={17} />
         </motion.a>
       </div>
-      <div className="github-content">
-        <div className="github-copy">
-          <motion.p
-            variants={fadeUpVariants}
-            initial={reduceMotion ? false : 'hidden'}
-            whileInView={reduceMotion ? undefined : 'visible'}
-            viewport={{ once: true, amount: 0.3 }}
-          >
-            Code is where ideas meet their edge cases. Explore the repositories and experiments behind the work.
-          </motion.p>
+      {/* Live Engineering Terminal Frame */}
+      <div className="terminal-container">
+        <div className="terminal-topbar">
+          <div className="terminal-dots" aria-hidden="true">
+            <span className="term-dot term-dot-red" />
+            <span className="term-dot term-dot-yellow" />
+            <span className="term-dot term-dot-green" />
+          </div>
+          <span className="terminal-title">{'TERM_EXEC // GITHUB_API_v3 · SAGARMK07 · REPO_STREAM'}</span>
+          <div className="terminal-meta">
+            <span className="term-pulse-dot" aria-hidden="true" />
+            <span>{'200 OK // LIVE'}</span>
+          </div>
+        </div>
+
+        <div className="github-content">
+          <div className="github-copy">
+            <motion.p
+              variants={fadeUpVariants}
+              initial={reduceMotion ? false : 'hidden'}
+              whileInView={reduceMotion ? undefined : 'visible'}
+              viewport={{ once: true, amount: 0.3 }}
+            >
+              Code is where ideas meet their edge cases. Explore the repositories and experiments behind the work.
+            </motion.p>
+            <motion.div
+              className="github-stats-slot"
+              aria-live="polite"
+              variants={fadeUpVariants}
+              initial={reduceMotion ? false : 'hidden'}
+              whileInView={reduceMotion ? undefined : 'visible'}
+              viewport={{ once: true, amount: 0.3 }}
+            >
+              <ProfileStats state={state} profile={profile} />
+            </motion.div>
+            <motion.div
+              className="github-state-slot"
+              aria-live="polite"
+              variants={fadeUpVariants}
+              initial={reduceMotion ? false : 'hidden'}
+              whileInView={reduceMotion ? undefined : 'visible'}
+              viewport={{ once: true, amount: 0.3 }}
+            >
+              <StateMessage state={state} />
+            </motion.div>
+          </div>
           <motion.div
-            className="github-stats-slot"
-            aria-live="polite"
-            variants={fadeUpVariants}
+            className="repo-list"
+            aria-busy={state === 'loading'}
+            variants={staggerVariants}
             initial={reduceMotion ? false : 'hidden'}
             whileInView={reduceMotion ? undefined : 'visible'}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.18 }}
           >
-            <ProfileStats state={state} profile={profile} />
-          </motion.div>
-          <motion.div
-            className="github-state-slot"
-            aria-live="polite"
-            variants={fadeUpVariants}
-            initial={reduceMotion ? false : 'hidden'}
-            whileInView={reduceMotion ? undefined : 'visible'}
-            viewport={{ once: true, amount: 0.3 }}
-          >
-            <StateMessage state={state} />
+            <RepoList state={state} repos={repos} />
           </motion.div>
         </div>
-        <motion.div
-          className="repo-list"
-          aria-busy={state === 'loading'}
-          variants={staggerVariants}
-          initial={reduceMotion ? false : 'hidden'}
-          whileInView={reduceMotion ? undefined : 'visible'}
-          viewport={{ once: true, amount: 0.18 }}
-        >
-          <RepoList state={state} repos={repos} />
-        </motion.div>
       </div>
       <motion.div
         className="contrib-link"

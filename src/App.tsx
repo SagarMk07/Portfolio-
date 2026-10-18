@@ -104,9 +104,9 @@ function Hero({ onOpenResume }: { onOpenResume: () => void }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: motionDuration.normal, delay: 0.08, ease: motionEase }}
       >
-        <span className="hero-role-tag">AI / ML DEVELOPER · SYSTEMS ARCHITECT</span>
+        <span className="hero-role-tag">{'SYS_INDEX // 01 · 12°58′N · 77°35′E · BANGALORE_IN'}</span>
         <span className="availability">
-          <i /> AVAILABLE FOR PROJECTS
+          <i /> {'STATUS: ACTIVE // OPEN TO WORK'}
         </span>
       </motion.div>
 
@@ -124,6 +124,19 @@ function Hero({ onOpenResume }: { onOpenResume: () => void }) {
                 }
           }
         >
+          <motion.div
+            className="hero-identity-tag"
+            initial={reduceMotion ? false : { opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: motionDuration.normal, ease: motionEase }}
+          >
+            <span className="identity-index">01 / IDENTITY</span>
+            <span className="identity-sep">{'//'}</span>
+            <span className="identity-name">SAGAR KALAGUDI</span>
+            <span className="identity-sep">{'//'}</span>
+            <span className="identity-role">AI / ML • FULL STACK DEVELOPER</span>
+          </motion.div>
+
           <motion.h1
             className="hero-title"
             variants={heroTitleVariants}
@@ -146,7 +159,7 @@ function Hero({ onOpenResume }: { onOpenResume: () => void }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.38, duration: motionDuration.normal, ease: motionEase }}
           >
-            ENGINEERING / INTELLIGENCE / IMPACT
+            COMPUTATIONAL INTELLIGENCE / RESILIENT SYSTEMS / HIGH-PRECISION INTERFACES
           </motion.div>
         </div>
 
@@ -155,22 +168,37 @@ function Hero({ onOpenResume }: { onOpenResume: () => void }) {
           <div className="hero-spatial-target" />
         </div>
 
-        {/* RIGHT: Short Personal Introduction & Telemetry */}
+        {/* RIGHT: Sleek, Non-Card Technical Info Block */}
         <motion.div
           className="hero-poster-right"
           initial={reduceMotion ? false : { opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.42, duration: motionDuration.normal, ease: motionEase }}
         >
-          <div className="hero-bio-card">
-            <span className="bio-label">CORE BRIEF // 2026</span>
-            <p>
+          <div className="hero-tech-block">
+            <div className="tech-block-header">
+              <span className="tech-block-label">{'CORE SYSTEM // TELEMETRY'}</span>
+              <span className="tech-status-dot"><i /> SYS_ONLINE</span>
+            </div>
+            <p className="hero-statement">
               I build intelligent products where machine learning meets real-world software.
               Connecting models, data pipelines, and responsive interfaces into one continuous experience.
             </p>
-            <div className="hero-telemetry-block">
-              <span className="telemetry-coord">12°58′17.2″N · 77°35′14.5″E</span>
-              <span className="telemetry-city">BANGALORE, INDIA</span>
+            <div className="hero-telemetry-grid">
+              <div className="telemetry-item">
+                <span className="telemetry-key">BASED IN:</span>
+                <span className="telemetry-val">BANGALORE, INDIA</span>
+              </div>
+              <div className="telemetry-item">
+                <span className="telemetry-key">FOCUS:</span>
+                <span className="telemetry-val">AI / ML · FULL STACK · SYSTEM DESIGN</span>
+              </div>
+              <div className="telemetry-item">
+                <span className="telemetry-key">STATUS:</span>
+                <span className="telemetry-val telemetry-highlight">
+                  <i className="status-pip" aria-hidden="true" /> AVAILABLE FOR WORK
+                </span>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -219,7 +247,7 @@ function Hero({ onOpenResume }: { onOpenResume: () => void }) {
         </a>
 
         <div className="hero-index">
-          01 <span>—</span> 04
+          01 <span>—</span> 07
         </div>
       </motion.div>
     </section>
@@ -326,22 +354,22 @@ function About() {
             <div className="capability-card">
               <div className="capability-num">01</div>
               <div className="capability-info">
-                <strong>INTELLIGENT MODEL PIPELINES</strong>
-                <p>Computer vision, document understanding OCR, and generative reasoning workflows.</p>
+                <strong>01 INTELLIGENCE</strong>
+                <p>Foundational machine learning, predictive modeling, vector embeddings, and generative reasoning workflows.</p>
               </div>
             </div>
             <div className="capability-card">
               <div className="capability-num">02</div>
               <div className="capability-info">
-                <strong>FULL STACK SYSTEMS</strong>
-                <p>High-throughput backend endpoints, PostgreSQL persistence, and asynchronous processing.</p>
+                <strong>02 SYSTEMS</strong>
+                <p>High-throughput backend endpoints, asynchronous queue architectures, resilient database schemas, and microservice APIs.</p>
               </div>
             </div>
             <div className="capability-card">
               <div className="capability-num">03</div>
               <div className="capability-info">
-                <strong>REACTIVE USER INTERFACES</strong>
-                <p>Pixel-precise interactive web experiences with WebGL, Three.js, and strict type safety.</p>
+                <strong>03 INTERFACES</strong>
+                <p>Pixel-precise interactive web experiences, real-time WebGL/Three.js computational environments, and strict type safety.</p>
               </div>
             </div>
           </div>
@@ -372,8 +400,8 @@ function BuildLog() {
       year: '2024',
       phase: 'AI / ML FOUNDATION',
       status: '[VERIFIED]',
-      tech: 'Python · Scikit-Learn · Computer Vision · OCR',
-      description: 'Explored deep learning foundations, statistical modeling, and real-time visual parsing systems.',
+      tech: 'Python · Scikit-Learn · Deep Learning · Neural Systems',
+      description: 'Explored deep learning foundations, statistical modeling, and real-time computational parsing systems.',
     },
     {
       year: '2025',

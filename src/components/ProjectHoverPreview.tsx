@@ -104,6 +104,12 @@ export function ProjectHoverPreview({ project, visible }: ProjectHoverPreviewPro
               mass: 0.6,
             }}
           >
+            {/* 4 Precision Corner Markers */}
+            <span className="preview-corner-bracket preview-corner-tl" aria-hidden="true" />
+            <span className="preview-corner-bracket preview-corner-tr" aria-hidden="true" />
+            <span className="preview-corner-bracket preview-corner-bl" aria-hidden="true" />
+            <span className="preview-corner-bracket preview-corner-br" aria-hidden="true" />
+
             {/* Header Telemetry */}
             <div className="preview-header">
               <span className="preview-number">{project.number} / CASE FILE</span>

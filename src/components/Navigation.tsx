@@ -119,57 +119,66 @@ export function Navigation() {
       className={`site-header ${isContact ? 'is-contact-theme' : ''}`}
       data-cursor-theme={isContact ? 'lime' : 'dark'}
     >
-      <Link className="brand" to="/" aria-label="Sagar Kalagudi home">
-        <span>SAGAR</span>
-        <i>/</i>
-        <span>MK</span>
-      </Link>
+      <div className="site-header-pill">
+        <Link className="brand" to="/" aria-label="Sagar Kalagudi home">
+          <span className="brand-dot" aria-hidden="true" />
+          <span className="brand-name">SAGAR</span>
+          <i className="brand-sep">{'//'}</i>
+          <span className="brand-sub">MK</span>
+        </Link>
 
-      <nav className={open ? 'nav-open' : ''} aria-label="Main navigation">
-        {links.map(link => {
-          const isCurrent = activeSection === link.id
-          return (
-            <Link
-              to={link.href}
-              key={link.label}
-              aria-current={isCurrent ? 'location' : undefined}
-              className={isCurrent ? 'is-active-link' : ''}
-              onClick={event => {
-                setOpen(false)
-                if (open) menuButtonRef.current?.focus()
-                if (location.pathname === '/' && location.hash === `#${link.id}`) {
-                  event.preventDefault()
-                  document.getElementById(link.id)?.scrollIntoView({
-                    behavior: reduceMotion ? 'auto' : 'smooth',
-                    block: 'start',
-                  })
-                }
-              }}
-            >
-              {link.label}
-            </Link>
-          )
-        })}
-        <a
-          className="nav-external"
-          href="https://github.com/SagarMk07"
-          target="_blank"
-          rel="noreferrer"
-          aria-label="GitHub profile"
-        >
-          <ArrowUpRight size={15} />
-        </a>
-      </nav>
+        <nav className={open ? 'nav-open' : ''} aria-label="Main navigation">
+          {links.map((link, idx) => {
+            const isCurrent = activeSection === link.id
+            return (
+              <Link
+                to={link.href}
+                key={link.label}
+                aria-current={isCurrent ? 'location' : undefined}
+                className={`nav-link ${isCurrent ? 'is-active-link' : ''}`}
+                onClick={event => {
+                  setOpen(false)
+                  if (open) menuButtonRef.current?.focus()
+                  if (location.pathname === '/' && location.hash === `#${link.id}`) {
+                    event.preventDefault()
+                    document.getElementById(link.id)?.scrollIntoView({
+                      behavior: reduceMotion ? 'auto' : 'smooth',
+                      block: 'start',
+                    })
+                  }
+                }}
+              >
+                <span className="nav-link-index">0{idx + 1}</span>
+                <span className="nav-link-label">{link.label}</span>
+                {isCurrent && <span className="nav-active-pip" aria-hidden="true" />}
+              </Link>
+            )
+          })}
+        </nav>
 
-      <button
-        ref={menuButtonRef}
-        className="menu-toggle"
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-        aria-label={open ? 'Close menu' : 'Open menu'}
-      >
-        {open ? <X /> : <Menu />}
-      </button>
+        <div className="header-actions">
+          <a
+            className="nav-external"
+            href="https://github.com/SagarMk07"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="GitHub profile"
+          >
+            <span>GITHUB</span>
+            <ArrowUpRight size={13} />
+          </a>
+
+          <button
+            ref={menuButtonRef}
+            className="menu-toggle"
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            aria-label={open ? 'Close menu' : 'Open menu'}
+          >
+            {open ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
+      </div>
 
       {/* 2px Acid Lime Scroll Progress Indicator using scaleX */}
       <div className="scroll-progress-track" aria-hidden="true">

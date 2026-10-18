@@ -22,12 +22,13 @@ export type Project = {
   liveDemo?: string
   image?: string
   featured: boolean
+  year: string
 }
 
 export const projects: Project[] = [
   {
     id: 'medassist-ai', number: '01', slug: 'medassist-ai', title: 'MedAssist AI', shortTitle: 'MedAssist',
-    category: 'HEALTHCARE · AI SYSTEMS', kind: 'medical', featured: true,
+    category: 'HEALTHCARE · AI SYSTEMS', kind: 'medical', featured: true, year: '2025',
     shortDescription: 'An AI-powered healthcare assistant combining symptom-related interaction, OCR, and supporting healthcare features.',
     overview: 'MedAssist AI is an AI-powered healthcare assistant designed to bring health-related assistance and document understanding into one interface.',
     problem: 'Healthcare-related information and assistance can be fragmented, making it difficult to find relevant context quickly.',
@@ -41,7 +42,7 @@ export const projects: Project[] = [
   },
   {
     id: 'smartshopper-guardian', number: '02', slug: 'smartshopper-guardian', title: 'SmartShopper Guardian AI', shortTitle: 'SmartShopper',
-    category: 'BROWSER TOOLS · PRODUCT INTELLIGENCE', kind: 'shopping', featured: true,
+    category: 'BROWSER TOOLS · PRODUCT INTELLIGENCE', kind: 'shopping', featured: true, year: '2025',
     shortDescription: 'An AI-powered shopping safety and product intelligence browser extension.',
     overview: 'SmartShopper Guardian AI is a browser extension concept for assessing product details, reviews, and pricing across shopping platforms.',
     problem: 'Online shoppers have to piece together product trust, review signals, and price context across different pages and platforms.',
@@ -55,7 +56,7 @@ export const projects: Project[] = [
   },
   {
     id: 'ai-trip-planner', number: '03', slug: 'ai-trip-planner', title: 'AI Personalized Trip Planner', shortTitle: 'Trip Planner',
-    category: 'TRAVEL · GENERATIVE AI', kind: 'travel', featured: true,
+    category: 'TRAVEL · GENERATIVE AI', kind: 'travel', featured: true, year: '2025',
     shortDescription: 'An AI-powered travel planning platform that connects personal preferences, itinerary generation, and mapped places.',
     overview: 'The AI Personalized Trip Planner uses personal preferences as the starting point for an AI-assisted travel planning workflow.',
     problem: 'Travel planning spreads preferences, destination research, itinerary drafts, and location context across separate tools.',
@@ -69,7 +70,7 @@ export const projects: Project[] = [
   },
   {
     id: 'rainwater-recommendation', number: '04', slug: 'rainwater-recommendation', title: 'AI-Based Rainwater Harvesting Recommendation System', shortTitle: 'Rainwater System',
-    category: 'SUSTAINABILITY · MACHINE LEARNING', kind: 'water', featured: true,
+    category: 'SUSTAINABILITY · MACHINE LEARNING', kind: 'water', featured: true, year: '2026',
     shortDescription: 'An AI-based recommendation system for rainwater harvesting, using Python, machine learning, and data analysis.',
     overview: 'This project explores how machine learning and data analysis can inform rainwater harvesting recommendations.',
     problem: 'Selecting a rainwater harvesting approach depends on site inputs and a clear way to interpret them.',

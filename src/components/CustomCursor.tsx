@@ -21,16 +21,13 @@ export function CustomCursor() {
 
   // Detect desktop device with fine pointer and hover support
   useEffect(() => {
-    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 1024px)')
-    const touchPointer = window.matchMedia('(any-pointer: coarse)')
-    const syncAvailability = () => setEnabled(finePointer.matches && !touchPointer.matches)
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)')
+    const syncAvailability = () => setEnabled(finePointer.matches)
 
     syncAvailability()
     finePointer.addEventListener('change', syncAvailability)
-    touchPointer.addEventListener('change', syncAvailability)
     return () => {
       finePointer.removeEventListener('change', syncAvailability)
-      touchPointer.removeEventListener('change', syncAvailability)
     }
   }, [])
 
